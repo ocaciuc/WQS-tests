@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>wqs-tests</artifactId>
+    <packaging>jar</packaging>
+    <name>Alfresco WQS Test Automation</name>
+    <description>Alfresco WQS Test Automation, ene to end functional tests.</description>
+    <groupId>org.alfresco.test</groupId>
+    <version>1.0-SNAPSHOT</version>
+    <developers>
+        <developer>
+            <name>Michael Suzuki</name>
+            <roles>
+                <role>Lead Engineer</role>
+            </roles>
+        </developer>
+    </developers>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco.test</groupId>
+            <artifactId>alfresco-testng</artifactId>
+            <version>1.1</version>
+        </dependency>
+    </dependencies>
+    
+</project>
