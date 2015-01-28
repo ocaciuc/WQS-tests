@@ -22,6 +22,11 @@
             <version>3.3</version>
         </dependency>
         <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>share-po</artifactId>
+            <version>5.0.c</version>
+        </dependency>
+        <dependency>
             <groupId>org.alfresco.test</groupId>
             <artifactId>alfresco-testng</artifactId>
             <version>1.1</version>
