@@ -1,8 +1,5 @@
 package org.alfresco.test.wqs.web.contact;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.alfresco.po.share.MyTasksPage;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
@@ -12,11 +9,11 @@ import org.alfresco.po.share.site.document.DocumentLibraryPage;
 import org.alfresco.po.share.site.document.EditDocumentPropertiesPage;
 import org.alfresco.po.share.wqs.WcmqsContactPage;
 import org.alfresco.po.share.wqs.WcmqsHomePage;
-import org.alfresco.test.wqs.web.search.SearchTests;
 import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.share.util.ShareUserWorkFlow;
 import org.alfresco.test.FailedTestListener;
+import org.alfresco.test.wqs.web.search.SearchTests;
 import org.alfresco.wqs.AbstractWQS;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
@@ -25,13 +22,16 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * Created by Cristina Axinte on 1/7/2015.
  */
 
 @Listeners(FailedTestListener.class)
 public class ContactWorkflowTests extends AbstractWQS
-{
+    {
     private static final Logger logger = Logger.getLogger(SearchTests.class);
     private final String ALFRESCO_QUICK_START = "Alfresco Quick Start";
     private final String QUICK_START_EDITORIAL = "Quick Start Editorial";
@@ -45,7 +45,7 @@ public class ContactWorkflowTests extends AbstractWQS
     @Override
     @BeforeClass(alwaysRun = true)
     public void setup() throws Exception
-    {
+        {
         super.setup();
 
         testName = this.getClass().getSimpleName();
@@ -53,29 +53,28 @@ public class ContactWorkflowTests extends AbstractWQS
 
         hostName = (shareUrl).replaceAll(".*\\//|\\:.*", "");
         try
-        {
+            {
             ipAddress = InetAddress.getByName(hostName).toString().replaceAll(".*/", "");
             logger.info("Ip address from Alfresco server was obtained");
-        }
-        catch (UnknownHostException | SecurityException e)
-        {
+            } catch (UnknownHostException | SecurityException e)
+            {
             logger.error("Ip address from Alfresco server could not be obtained");
-        }
+            }
 
         wqsURL = siteName + ":8080/wcmqs";
         logger.info(" wcmqs url : " + wqsURL);
         logger.info("Start Tests from: " + testName);
-    }
+        }
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
-    {
+        {
         super.tearDown();
-    }
+        }
 
-    @Test(groups = { "DataPrepWQS" })
+    @Test(groups = {"DataPrepWQS"})
     public void dataPrep_AONE() throws Exception
-    {
+        {
         // User login
         // ---- Step 1 ----
         // ---- Step Action -----
@@ -113,14 +112,14 @@ public class ContactWorkflowTests extends AbstractWQS
         String setHostAddress = "cmd.exe /c echo. >> %WINDIR%\\System32\\Drivers\\Etc\\hosts && echo " + ipAddress + " " + siteName
                 + " >> %WINDIR%\\System32\\Drivers\\Etc\\hosts";
         Runtime.getRuntime().exec(setHostAddress);
-    }
+        }
 
     /*
      * AONE-5717 Verify the presence of Contact request on My Tasks dashboard
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5717() throws Exception
-    {
+        {
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         ;
@@ -172,14 +171,14 @@ public class ContactWorkflowTests extends AbstractWQS
         waitForCommentPresent(myTasksPage, taskName);
         Assert.assertTrue(myTasksPage.isTaskPresent(taskName), "Task: " + taskName + " is not present.");
 
-    }
+        }
 
     /*
      * AONE-5718 Verify the available actions for Contact request(v 3.4)
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5718() throws Exception
-    {
+        {
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorComment = "Comment by " + visitorName;
@@ -221,18 +220,18 @@ public class ContactWorkflowTests extends AbstractWQS
         Assert.assertTrue(myTasksPage.isTaskViewButtonEnabled(taskName), "View task button is not present for task: " + taskName);
         Assert.assertTrue(myTasksPage.isTaskPriorityIconEnabled(taskName), "Priority icon button is not present for task: " + taskName);
 
-    }
+        }
 
     private void waitForCommentPresent(MyTasksPage myTasksPage, String taskName) throws InterruptedException
-    {
+        {
         int count = 1;
         while (!myTasksPage.isTaskPresent(taskName) && count <= 10)
-        {
+            {
             ShareUser.openUserDashboard(drone);
             ShareUserWorkFlow.navigateToMyTasksPage(drone);
             Thread.sleep(5000);
             count++;
+            }
         }
-    }
 
-}
+    }

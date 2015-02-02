@@ -32,7 +32,7 @@ import java.util.Random;
 
 @Listeners(FailedTestListener.class)
 public class SearchTests extends AbstractWQS
-{
+    {
     private static final Logger logger = Logger.getLogger(SearchTests.class);
     private final String ALFRESCO_QUICK_START = "Alfresco Quick Start";
     private final String QUICK_START_EDITORIAL = "Quick Start Editorial";
@@ -70,7 +70,7 @@ public class SearchTests extends AbstractWQS
     @Override
     @BeforeClass(alwaysRun = true)
     public void setup() throws Exception
-    {
+        {
         super.setup();
 
         testName = this.getClass().getSimpleName();
@@ -98,29 +98,28 @@ public class SearchTests extends AbstractWQS
 
         hostName = (shareUrl).replaceAll(".*\\//|\\:.*", "");
         try
-        {
+            {
             ipAddress = InetAddress.getByName(hostName).toString().replaceAll(".*/", "");
             logger.info("Ip address from Alfresco server was obtained");
-        }
-        catch (UnknownHostException | SecurityException e)
-        {
+            } catch (UnknownHostException | SecurityException e)
+            {
             logger.error("Ip address from Alfresco server could not be obtained");
-        }
+            }
 
         wqsURL = siteName + ":8080/wcmqs";
         logger.info(" wcmqs url : " + wqsURL);
         logger.info("Start Tests from: " + testName);
-    }
+        }
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
-    {
+        {
         super.tearDown();
-    }
+        }
 
-    @Test(groups = { "DataPrepWQS" })
+    @Test(groups = {"DataPrepWQS"})
     public void dataPrep_AONE() throws Exception
-    {
+        {
         // User login
         // ---- Step 1 ----
         // ---- Step Action -----
@@ -168,14 +167,14 @@ public class SearchTests extends AbstractWQS
         String setHostAddress = "cmd.exe /c echo. >> %WINDIR%\\System32\\Drivers\\Etc\\hosts && echo " + ipAddress + " " + siteName
                 + " >> %WINDIR%\\System32\\Drivers\\Etc\\hosts";
         Runtime.getRuntime().exec(setHostAddress);
-    }
+        }
 
     /*
      * AONE-5708: Search
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5708() throws Exception
-    {
+        {
         String searchedText = "company";
         int expectedNumberOfSearchedItems = 9;
         // ---- Step 1 ----
@@ -204,14 +203,14 @@ public class SearchTests extends AbstractWQS
         Assert.assertNotNull(wcmqsSearchPage.getTagSearchResults(), "The Search Results list is empty.");
         Assert.assertTrue(wcmqsSearchPage.isLatestBlogArticlesDisplayed(), "The Latest Blog Articles list is not displayed.");
         Assert.assertEquals(wcmqsSearchPage.getWcmqsSearchPagePagination(), "Page 1 of 1", "The pagination form is not (Page 1 of 1)");
-    }
+        }
 
     /*
      * AONE-5709 Opening blog posts from Search page
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5709() throws Exception
-    {
+        {
         String searchedText = "company";
 
         // ---- Step 1 ----
@@ -275,14 +274,14 @@ public class SearchTests extends AbstractWQS
         blogPostPage = new WcmqsBlogPostPage(drone);
         blogPostPage.render();
         Assert.assertEquals(blogPostPage.getTitle(), thirdLatestBlog);
-    }
+        }
 
     /*
      * AONE-5710 Searching items by name
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5710() throws Exception
-    {
+        {
         String searchedText = "House";
         String searchedText2 = "techno";
         String searchedText3 = "trance";
@@ -394,14 +393,14 @@ public class SearchTests extends AbstractWQS
         Assert.assertFalse(wcmqsSearchPage.getTagSearchResults().toString().contains(publicationHouse5710), "Search Results list contains title: "
                 + publicationHouse5710);
 
-    }
+        }
 
     /*
      * AONE-5711 Searching items by content
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5711() throws Exception
-    {
+        {
         String searchedText = "House1";
         String searchedText2 = "techno1";
         String searchedText3 = "trance1";
@@ -509,14 +508,14 @@ public class SearchTests extends AbstractWQS
                 + "Publ Tr5711");
         Assert.assertFalse(wcmqsSearchPage.getTagSearchResults().toString().contains("Publ H5711"), "Search Results list contains title: " + "Publ H5711");
 
-    }
+        }
 
     /*
      * AONE-5713 Pagination on Search page
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5713() throws Exception
-    {
+        {
         String searchedText = "test";
 
         // ---- Step 1 ----
@@ -569,14 +568,14 @@ public class SearchTests extends AbstractWQS
         Assert.assertFalse(wcmqsSearchPage.getTagSearchResults().toString().contains("Blog3test 5713"), "Search Results list contains title: "
                 + "Blog3test 5713");
 
-    }
+        }
 
     /*
      * AONE-5712 Searching items by tags
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5712() throws Exception
-    {
+        {
         String searchedText = "House2";
         String searchedText2 = "techno2";
         String searchedText3 = "trance2";
@@ -684,14 +683,14 @@ public class SearchTests extends AbstractWQS
                 + "Publ Tr5712");
         Assert.assertFalse(wcmqsSearchPage.getTagSearchResults().toString().contains("Publ H5712"), "Search Results list contains title: " + "Publ H5712");
 
-    }
+        }
 
     /*
      * AONE-5714 Empty search
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5714() throws Exception
-    {
+        {
         String searchedText = "";
 
         // ---- Step 1 ----
@@ -722,15 +721,15 @@ public class SearchTests extends AbstractWQS
         wcmqsSearchPage.render();
         Assert.assertEquals(wcmqsSearchPage.getTagSearchResults().size(), 0, "The Search Results list is not empty");
         Assert.assertTrue(wcmqsSearchPage.isLatestBlogArticlesDisplayed(), "The Latest Blog Articles list is not displayed.");
-    }
+        }
 
     /*
      * AONE-5715 Wildcard search
      * Jira issue #MNT-13143
      */
-    @Test(groups = { "WQS", "EnterpriseOnly", "ProductBug" })
+    @Test(groups = {"WQS", "EnterpriseOnly", "ProductBug"})
     public void AONE_5715() throws Exception
-    {
+        {
         String searchedText = "*glo?al*";
         // String searchedText = "*global*";
 
@@ -764,14 +763,14 @@ public class SearchTests extends AbstractWQS
         Assert.assertTrue(wcmqsSearchPage.isLatestBlogArticlesDisplayed(), "The Latest Blog Articles list is not displayed.");
         Assert.assertTrue(wcmqsSearchPage.getTagSearchResults().toString().contains("Global car industry"), "Search Results list does not contain title: "
                 + "Global car industry");
-    }
+        }
 
     /*
      * AONE-5716 Too long data search
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5716() throws Exception
-    {
+        {
         String searchedText;
 
         // ---- Step 1 ----
@@ -806,11 +805,11 @@ public class SearchTests extends AbstractWQS
         Assert.assertEquals(actualSearchedText, expectedSearchedText, "Actual searched text is " + actualSearchedText + ", but expected is "
                 + expectedSearchedText);
         Assert.assertEquals(actualSearchedText.length(), 100, "Length of searched text is not 100 characters");
-    }
+        }
 
     private DocumentLibraryPage navigateToFolderAndCreateContent(DocumentLibraryPage documentLibPage, String folderName, String fileName, String fileContent, String fileTitle)
             throws Exception
-    {
+        {
         documentLibPage = navigateToFolder(documentLibPage, folderName);
         ContentDetails contentDetails1 = new ContentDetails();
         contentDetails1.setName(fileName);
@@ -818,33 +817,33 @@ public class SearchTests extends AbstractWQS
         contentDetails1.setContent(fileContent);
         documentLibPage = ShareUser.createContentInCurrentFolder(drone, contentDetails1, ContentType.PLAINTEXT, documentLibPage);
         return documentLibPage;
-    }
+        }
 
     private DocumentLibraryPage navigateToFolder(DocumentLibraryPage documentLibPage, String folderName)
-    {
+        {
         documentLibPage = documentLibPage.selectFolder(ALFRESCO_QUICK_START).render();
         documentLibPage = documentLibPage.selectFolder(QUICK_START_EDITORIAL).render();
         documentLibPage = documentLibPage.selectFolder(ROOT).render();
         documentLibPage = documentLibPage.selectFolder(folderName).render();
         return documentLibPage;
-    }
+        }
 
     private String generateRandomStringOfLength(int length)
-    {
+        {
         char[] chars = "abc defghijkl mnopqrs tu vwxyz".toCharArray();
         StringBuilder stringBuilder = new StringBuilder();
         Random random = new Random();
         for (int i = 0; i < length; i++)
-        {
+            {
             char c = chars[random.nextInt(chars.length)];
             stringBuilder.append(c);
-        }
+            }
 
         return stringBuilder.toString();
-    }
+        }
 
     private void dataPrep_AONE_5710(DocumentLibraryPage documentLibPage) throws Exception
-    {
+        {
         // ---- Step 4 ----
         // ---- Step action ----
         // Several articles are created in News, Publications, Blogs components:
@@ -865,10 +864,10 @@ public class SearchTests extends AbstractWQS
                 publicationTechno5710);
         documentLibPage = navigateToFolderAndCreateContent(documentLibPage, "publications", "PublicationTr5710.html", "content publication tr1",
                 publicationTrance5710);
-    }
+        }
 
     private void dataPrep_AONE_5711(DocumentLibraryPage documentLibPage) throws Exception
-    {
+        {
         // ---- Step 4 ----
         // ---- Step action ----
         // Several articles are created in News, Publications, Blogs components:
@@ -887,10 +886,10 @@ public class SearchTests extends AbstractWQS
         documentLibPage = navigateToFolderAndCreateContent(documentLibPage, "publications", "PublTe5711.html", publicationTechno5711, "Publ Te5711");
         documentLibPage = navigateToFolderAndCreateContent(documentLibPage, "publications", "PublTr5711.html", publicationTrance5711, "Publ Tr5711");
 
-    }
+        }
 
     private void dataPrep_AONE_5712(DocumentLibraryPage documentLibPage) throws Exception
-    {
+        {
         // ---- Step 4 ----
         // ---- Step action ----
         // Several articles are created in News, Publications, Blogs components:
@@ -922,10 +921,10 @@ public class SearchTests extends AbstractWQS
         documentLibPage.getFileDirectoryInfo("PublH5712.html").addTag(tagHouse);
         documentLibPage.getFileDirectoryInfo("PublTe5712.html").addTag(tagTechno);
         documentLibPage.getFileDirectoryInfo("PublTr5712.html").addTag(tagTrance);
-    }
+        }
 
     private void dataPrep_AONE_5713(DocumentLibraryPage documentLibPage) throws Exception
-    {
+        {
         // ---- Step 4 ----
         // ---- Step action ----
         // More than 20 article items with content "test" are created in 'news' and 'blogs' folders;
@@ -934,18 +933,18 @@ public class SearchTests extends AbstractWQS
         String name;
         // create 10 blogs in "news" folder
         for (int i = 0; i < 10; i++)
-        {
+            {
             name = "News" + i;
             documentLibPage = navigateToFolderAndCreateContent(documentLibPage, "news", name + "T5713.html", name + " content", name + "test 5713");
-        }
+            }
 
         // create 10 blogs in "blog" folder
         for (int i = 0; i < 10; i++)
-        {
+            {
             name = "Blog" + i;
             documentLibPage = navigateToFolderAndCreateContent(documentLibPage, "blog", name + "T5713.html", name + " content", name + "test 5713");
+            }
+
         }
 
     }
-
-}

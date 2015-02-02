@@ -10,11 +10,7 @@ import org.alfresco.po.share.site.datalist.DataListPage;
 import org.alfresco.po.share.site.datalist.items.VisitorFeedbackRow;
 import org.alfresco.po.share.site.datalist.lists.VisitorFeedbackList;
 import org.alfresco.po.share.site.document.DocumentLibraryPage;
-import org.alfresco.po.share.wqs.WcmqsBlogPage;
-import org.alfresco.po.share.wqs.WcmqsBlogPostPage;
-import org.alfresco.po.share.wqs.WcmqsComment;
-import org.alfresco.po.share.wqs.WcmqsHomePage;
-import org.alfresco.po.share.wqs.WcmqsLoginPage;
+import org.alfresco.po.share.wqs.*;
 import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.test.FailedTestListener;
@@ -22,17 +18,13 @@ import org.alfresco.wqs.AbstractWQS;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 @Listeners(FailedTestListener.class)
-public class WqsDLIntegrationTests extends AbstractWQS
-{
+public class WqsDLIntegrationTests extends AbstractWQS {
     private static final Logger logger = Logger.getLogger(WqsDLIntegrationTests.class);
-    String newsName;;
+    String newsName;
+    ;
     String wcmqsURL;
     String siteName;
 
@@ -52,28 +44,22 @@ public class WqsDLIntegrationTests extends AbstractWQS
         logger.info(" wcmqs url : " + wcmqsURL);
     }
 
-    @BeforeMethod(alwaysRun = true, groups = { "WQS" })
-    public void testSetup() throws Exception
-    {
+    @BeforeMethod(alwaysRun = true, groups = {"WQS"})
+    public void testSetup() throws Exception {
         super.setup();
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown()
-    {
-        try
-        {
+    public void tearDown() {
+        try {
             drone.quit();
-        }
-        catch (UnreachableBrowserException e)
-        {
+        } catch (UnreachableBrowserException e) {
             logger.error("Browser communication failed.");
         }
     }
 
-    @Test(groups = { "DataPrepWQS", "EnterpriseOnly" })
-    public void dataPrep() throws Exception
-    {
+    @Test(groups = {"DataPrepWQS", "EnterpriseOnly"})
+    public void dataPrep() throws Exception {
         // Login
         ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
 
@@ -98,10 +84,11 @@ public class WqsDLIntegrationTests extends AbstractWQS
         ShareUser.logout(drone);
     }
 
-    /** AONE-5593:Verify correct displaying of comments in Share Data lists */
-    @Test(groups = { "WQSShare", "EnterpriseOnly" })
-    public void AONE_5593() throws Exception
-    {
+    /**
+     * AONE-5593:Verify correct displaying of comments in Share Data lists
+     */
+    @Test(groups = {"WQSShare", "EnterpriseOnly"})
+    public void AONE_5593() throws Exception {
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -179,10 +166,11 @@ public class WqsDLIntegrationTests extends AbstractWQS
         ShareUser.logout(drone);
     }
 
-    /** AONE-5594:Verify correct work of report post function */
-    @Test(groups = { "WQSShare", "EnterpriseOnly" })
-    public void AONE_5594() throws Exception
-    {
+    /**
+     * AONE-5594:Verify correct work of report post function
+     */
+    @Test(groups = {"WQSShare", "EnterpriseOnly"})
+    public void AONE_5594() throws Exception {
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();

@@ -40,18 +40,17 @@ import org.testng.annotations.Test;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Created by Lucian Tuca on 12/02/2014. Modified by Sergiu Vidrascu on
  * 01/09/2015
  */
 public class BlogComponent extends AbstractWQS
-{
+    {
     private static final Logger logger = Logger.getLogger(BlogComponent.class);
     private String wqsURL;
     private String siteName;
@@ -60,37 +59,36 @@ public class BlogComponent extends AbstractWQS
     @Override
     @BeforeClass(alwaysRun = true)
     public void setup() throws Exception
-    {
+        {
         super.setup();
         String testName = this.getClass().getSimpleName();
         siteName = testName;
         String hostName = (shareUrl).replaceAll(".*\\//|\\:.*", "");
         try
-        {
+            {
             ipAddress = InetAddress.getByName(hostName).toString().replaceAll(".*/", "");
             logger.info("Ip address from Alfresco server was obtained");
-        }
-        catch (UnknownHostException | SecurityException e)
-        {
+            } catch (UnknownHostException | SecurityException e)
+            {
             logger.error("Ip address from Alfresco server could not be obtained");
-        }
+            }
 
         ;
         wqsURL = siteName + ":8080/wcmqs";
         logger.info(" wcmqs url : " + wqsURL);
         logger.info("Start Tests from: " + testName);
 
-    }
+        }
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
-    {
+        {
         super.tearDown();
-    }
+        }
 
-    @Test(groups = { "DataPrepWQS" })
+    @Test(groups = {"DataPrepWQS"})
     public void dataPrep_AONE() throws Exception
-    {
+        {
         // User login
         // ---- Step 1 ----
         // ---- Step Action -----
@@ -135,14 +133,14 @@ public class BlogComponent extends AbstractWQS
                 + " >> %WINDIR%\\System32\\Drivers\\Etc\\hosts";
         Runtime.getRuntime().exec(setHostAddress);
 
-    }
+        }
 
     /*
      * AONE-5673 Blogs page
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5673() throws Exception
-    {
+        {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -176,14 +174,14 @@ public class BlogComponent extends AbstractWQS
         Assert.assertTrue(blogPage.isBlogPostDateDisplayed());
         Assert.assertTrue(blogPage.isBlogPostCreatorDisplayed());
         Assert.assertTrue(blogPage.isBlogPostCommentsLinkDisplayed());
-    }
+        }
 
     /*
      * AONE-5674 Opening blog post
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5674() throws Exception
-    {
+        {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -274,14 +272,14 @@ public class BlogComponent extends AbstractWQS
         blogPage.clickReadMoreByBlog(WcmqsBlogPage.ANALYSTS_LATEST_THOUGHTS);
         assertThat("Verify if the correct page opened ", blogPage.getTitle(), containsString(WcmqsBlogPage.ANALYSTS_LATEST_THOUGHTS));
 
-    }
+        }
 
     /*
      * AONE-5675 Pagination
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5675() throws Exception
-    {
+        {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -310,14 +308,14 @@ public class BlogComponent extends AbstractWQS
 
         assertThat("Verify if the correct number of blog pages is displayed ", blogPage.getBlogPosts(), is(equalTo(3)));
 
-    }
+        }
 
     /*
      * AONE-5676 Commenting a blog post
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5676() throws Exception
-    {
+        {
 
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
@@ -403,14 +401,14 @@ public class BlogComponent extends AbstractWQS
         assertThat(newFeedback.getVisitorComment(), is(equalTo(visitorComment)));
         assertThat(newFeedback.getVisitorWebsite(), is(equalTo(visitorWebsite)));
 
-    }
+        }
 
     /*
      * AONE-5677 Verify correct work of comments number value
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5677() throws Exception
-    {
+        {
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -487,14 +485,14 @@ public class BlogComponent extends AbstractWQS
         WcmqsComment wcmqsComment = new WcmqsComment(drone).render();
         assertThat(wcmqsComment.getNumberOfCommentsOnPage(), is(equalTo(3)));
 
-    }
+        }
 
     /*
      * AONE-5678 Creating comment with wildcards in blog
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5678() throws Exception
-    {
+        {
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -621,15 +619,15 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Posting was succesfull", wcmqsBlogPostPage.isAddCommentMessageDisplay());
 
-    }
+        }
 
     /*
      * AONE-5680 Verifying correct work of name field on comment form
      * Jira issue #ACE-3714
      */
-    @Test(groups = { "WQS", "EnterpriseOnly", "ProductBug" })
+    @Test(groups = {"WQS", "EnterpriseOnly", "ProductBug"})
     public void AONE_5680() throws Exception
-    {
+        {
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -676,14 +674,14 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Check if posting was succesfull", wcmqsBlogPostPage.isAddCommentMessageDisplay());
 
-    }
+        }
 
     /*
      * AONE-5681 Commenting blog post with empty mandatory fields
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5681() throws Exception
-    {
+        {
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -792,14 +790,14 @@ public class BlogComponent extends AbstractWQS
 
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Verify comment textfield error is displayed", wcmqsBlogPostPage.getFormErrorMessages(), hasItem(equalTo("please enter a comment")));
-    }
+        }
 
     /*
      * AONE-5682 Checking correct work of Email field
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5682() throws Exception
-    {
+        {
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -892,14 +890,14 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Posting was succesfull", wcmqsBlogPostPage.isAddCommentMessageDisplay());
 
-    }
+        }
 
     /*
      * AONE-5683 Reporting post
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5683() throws Exception
-    {
+        {
 
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
@@ -1015,14 +1013,14 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage = new WcmqsBlogPostPage(drone);
         assertThat("Verify if the new feedback comment has re-appeared", wcmqsBlogPostPage.getFeedBackComments(), hasItem(visitorComment));
 
-    }
+        }
 
     /*
      * AONE-5684 Verify correct work of Leave Comment form
      */
-    @Test(groups = { "WQS", "EnterpriseOnly" })
+    @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5684() throws Exception
-    {
+        {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -1068,11 +1066,11 @@ public class BlogComponent extends AbstractWQS
         blogPage.clickLinkByTitle(WcmqsBlogPage.ETHICAL_FUNDS);
         wcmqsBlogPostPage = new WcmqsBlogPostPage(drone);
         assertThat("Leave comment form is displayed ", wcmqsBlogPostPage.isLeaveCommentFormDisplayed());
-    }
+        }
 
     @Test(groups = "DataPrepWQS")
     public void dataPrep_AONE_5685() throws Exception
-    {
+        {
         // ---- Data prep ----
         ShareUser.openSiteDashboard(drone, siteName);
         DocumentLibraryPage documentLibPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
@@ -1085,14 +1083,14 @@ public class BlogComponent extends AbstractWQS
         documentLibPage.getFileDirectoryInfo("blog3.html").addTag("testtag 2");
 
         documentLibPage.getFileDirectoryInfo("index.html");
-    }
+        }
 
     /*
      * AONE-5685 Section tags
      */
-    @Test(groups = { "WQS" })
+    @Test(groups = {"WQS"})
     public void AONE_5685() throws Exception
-    {
+        {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -1143,14 +1141,14 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPage.clickTag("testtag 2 (1)");
         wcmqsSearchPage = new WcmqsSearchPage(drone);
         assertThat("Check if the number of results is correct", wcmqsSearchPage.getTagSearchResults().size(), is(equalTo(1)));
-    }
+        }
 
     /*
      * AONE-5679 Adding blog post comment with too long data
      */
-    @Test(groups = { "WQS" })
+    @Test(groups = {"WQS"})
     public void AONE_5679() throws Exception
-    {
+        {
 
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
@@ -1274,11 +1272,11 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Posting was succesfull", wcmqsBlogPostPage.isAddCommentMessageDisplay());
 
-    }
+        }
 
     public void navigateTo(String url)
-    {
+        {
         drone.navigateTo(url);
-    }
+        }
 
-}
+    }
