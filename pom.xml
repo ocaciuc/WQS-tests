@@ -24,12 +24,34 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>share-po</artifactId>
-            <version>5.0.c</version>
+            <version>5.0.1-SNAPSHOT</version>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>share-po</artifactId>
+            <version>5.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>qa-share</artifactId>
+            <version>5.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco.test</groupId>
             <artifactId>alfresco-testng</artifactId>
             <version>1.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.4.01</version>
         </dependency>
     </dependencies>
     
