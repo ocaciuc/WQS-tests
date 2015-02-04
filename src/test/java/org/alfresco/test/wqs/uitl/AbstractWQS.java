@@ -12,10 +12,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.wqs;
+package org.alfresco.test.wqs.uitl;
 
 
-import org.alfresco.po.share.*;
+import org.alfresco.po.share.AlfrescoVersion;
+import org.alfresco.po.share.SharePage;
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.util.ShareTestProperty;
 import org.alfresco.test.AlfrescoTests;
 import org.alfresco.webdrone.HtmlPage;
@@ -32,7 +34,10 @@ import org.testng.annotations.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class includes: Abstract class holds all common methods for WQS tests
@@ -85,7 +90,7 @@ public abstract class AbstractWQS implements AlfrescoTests
     Map<String, WebDrone> droneMap = new HashMap<String, WebDrone>();
 
     @BeforeSuite(alwaysRun = true)
-    @Parameters({ "contextFileName" })
+    @Parameters({"contextFileName"})
     public static void setupContext(@Optional("wqs-context.xml") String contextFileName)
     {
         List<String> contextXMLList = new ArrayList<String>();
@@ -140,8 +145,7 @@ public abstract class AbstractWQS implements AlfrescoTests
                     try
                     {
                         ShareUtil.logout(entry.getValue());
-                    }
-                    catch (Exception e)
+                    } catch (Exception e)
                     {
                         logger.error("If it's tests associated with admin-console-summary-page. it's normal. If not - we have a problem.");
                     }
@@ -149,8 +153,7 @@ public abstract class AbstractWQS implements AlfrescoTests
                     logger.info(entry.getKey() + " closed");
                     logger.info("[Suite ] : End of Tests in: " + this.getClass().getSimpleName());
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 logger.error("Failed to close previous instance of brower:" + entry.getKey(), e);
             }
@@ -242,7 +245,7 @@ public abstract class AbstractWQS implements AlfrescoTests
      * desired format.
      *
      * @param testID String Name of the test for uniquely identifying / mapping
-     *            test data with the test
+     *               test data with the test
      * @return String userName
      */
     protected static String getUserNameForDomain(String testID, String domainName)
@@ -264,7 +267,7 @@ public abstract class AbstractWQS implements AlfrescoTests
      * Helper to consistently get the Site Name.
      *
      * @param testID String Name of the test for uniquely identifying / mapping
-     *            test data with the test
+     *               test data with the test
      * @return String sitename
      */
     public static String getSiteName(String testID)
@@ -277,12 +280,11 @@ public abstract class AbstractWQS implements AlfrescoTests
     }
 
 
-
     /**
      * Helper to consistently get the filename.
      *
      * @param partFileName String Part Name of the file for uniquely identifying /
-     *            mapping test data with the test
+     *                     mapping test data with the test
      * @return String fileName
      */
     protected static String getFileName(String partFileName)
@@ -311,7 +313,7 @@ public abstract class AbstractWQS implements AlfrescoTests
     /**
      * Common method to wait for the next solr indexing cycle.
      *
-     * @param driver WebDrone Instance
+     * @param driver      WebDrone Instance
      * @param waitMiliSec Wait duration in milliseconds
      */
     @SuppressWarnings("deprecation")
@@ -361,10 +363,10 @@ public abstract class AbstractWQS implements AlfrescoTests
         {
             HtmlPage generalPage = driver.getCurrentPage().render(refreshDuration);
             return (SharePage) generalPage;
-        }
-        catch (PageException pe)
+        } catch (PageException pe)
         {
             throw new PageException("Can not cast to SharePage: Current URL: " + driver.getCurrentUrl());
         }
     }
+
 }

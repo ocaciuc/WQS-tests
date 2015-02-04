@@ -15,6 +15,7 @@
 
 package org.alfresco.test.wqs.web.blog;
 
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
@@ -29,7 +30,7 @@ import org.alfresco.po.share.site.document.EditDocumentPropertiesPage;
 import org.alfresco.po.share.wqs.*;
 import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
-import org.alfresco.wqs.AbstractWQS;
+import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
@@ -44,6 +45,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+
 
 /**
  * Created by Lucian Tuca on 12/02/2014. Modified by Sergiu Vidrascu on
@@ -94,7 +96,7 @@ public class BlogComponent extends AbstractWQS
         // ---- Step Action -----
         // WCM Quick Start is installed; - is not required to be executed
         // automatically
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 2 ----
         // ---- Step Action -----

@@ -13,7 +13,7 @@ import org.alfresco.po.share.wqs.*;
 import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.test.FailedTestListener;
-import org.alfresco.wqs.AbstractWQS;
+import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.Keys;
 import org.testng.Assert;

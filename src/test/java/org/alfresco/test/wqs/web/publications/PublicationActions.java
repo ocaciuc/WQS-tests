@@ -27,7 +27,7 @@ import org.alfresco.po.share.wqs.WcmqsPublicationPage;
 import org.alfresco.po.share.wqs.WcmqsSearchPage;
 import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
-import org.alfresco.wqs.AbstractWQS;
+import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;

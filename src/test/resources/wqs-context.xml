@@ -6,6 +6,7 @@
           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
     <import resource="classpath:share-po-test-context.xml" />
+    <import resource="classpath:util-context.xml" />
     <bean id="shareProperties" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
         <property name="locations">
             <list>
@@ -19,7 +20,7 @@
         <property name="ignoreResourceNotFound" value="true" />
     </bean>
 
-    <bean id="wqsProperties" class="org.alfresco.wqs.WqsTestProperty">
+    <bean id="wqsProperties" class="org.alfresco.test.wqs.uitl.WqsTestProperty">
         <constructor-arg name="wcmqs" value="${share.wcmqs.path}" />
         <constructor-arg name="domainFree" value="${domainFree}" />
         <constructor-arg name="domainPremium" value="${domainPremium}" />

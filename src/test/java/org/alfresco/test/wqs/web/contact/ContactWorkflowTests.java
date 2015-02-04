@@ -14,7 +14,7 @@ import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.share.util.ShareUserWorkFlow;
 import org.alfresco.test.FailedTestListener;
 import org.alfresco.test.wqs.web.search.SearchTests;
-import org.alfresco.wqs.AbstractWQS;
+import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;

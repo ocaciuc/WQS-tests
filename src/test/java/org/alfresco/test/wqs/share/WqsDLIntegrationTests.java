@@ -1,5 +1,6 @@
 package org.alfresco.test.wqs.share;
 
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
@@ -10,21 +11,23 @@ import org.alfresco.po.share.site.datalist.DataListPage;
 import org.alfresco.po.share.site.datalist.items.VisitorFeedbackRow;
 import org.alfresco.po.share.site.datalist.lists.VisitorFeedbackList;
 import org.alfresco.po.share.site.document.DocumentLibraryPage;
+import org.alfresco.po.share.util.SiteUtil;
 import org.alfresco.po.share.wqs.*;
-import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.test.FailedTestListener;
-import org.alfresco.wqs.AbstractWQS;
+import org.alfresco.test.util.SiteService;
+import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.remote.UnreachableBrowserException;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
 @Listeners(FailedTestListener.class)
-public class WqsDLIntegrationTests extends AbstractWQS {
+public class WqsDLIntegrationTests extends AbstractWQS
+{
     private static final Logger logger = Logger.getLogger(WqsDLIntegrationTests.class);
     String newsName;
-    ;
     String wcmqsURL;
     String siteName;
 
@@ -32,12 +35,14 @@ public class WqsDLIntegrationTests extends AbstractWQS {
 
     @Override
     @BeforeClass(alwaysRun = true)
-    public void setup() throws Exception {
+    public void setup() throws Exception
+    {
         super.setup();
         testName = this.getClass().getSimpleName();
         // newsName = "cont2" + getFileName(testName) + ".html";
         // siteName = getSiteName(testName);
-        siteName = "Share-55952SiteName";
+//        siteName = "Share-55952SiteNameZ2";
+        siteName = getSiteName(testName) + System.currentTimeMillis();
         logger.info("Start tests:" + testName);
 
         wcmqsURL = wcmqs;
@@ -45,27 +50,35 @@ public class WqsDLIntegrationTests extends AbstractWQS {
     }
 
     @BeforeMethod(alwaysRun = true, groups = {"WQS"})
-    public void testSetup() throws Exception {
+    public void testSetup() throws Exception
+    {
         super.setup();
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() {
-        try {
+    public void tearDown()
+    {
+        try
+        {
             drone.quit();
-        } catch (UnreachableBrowserException e) {
+        } catch (UnreachableBrowserException e)
+        {
             logger.error("Browser communication failed.");
         }
     }
 
     @Test(groups = {"DataPrepWQS", "EnterpriseOnly"})
-    public void dataPrep() throws Exception {
+    public void dataPrep() throws Exception
+    {
         // Login
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_PASSWORD, ADMIN_PASSWORD);
 
         // Create Site
-        ShareUser.createSite(drone, siteName, AbstractWQS.SITE_VISIBILITY_PUBLIC).render();
-        SiteDashboardPage siteDashboardPage = ShareUser.openSiteDashboard(drone, siteName);
+        SiteService siteService = (SiteService) ctx.getBean("siteService");
+        siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
+
+        SiteDashboardPage siteDashboardPage = (SiteDashboardPage) SiteUtil.openSiteDashboard(drone, siteName);
 
         CustomiseSiteDashboardPage customiseSiteDashboardPage = siteDashboardPage.getSiteNav().selectCustomizeDashboard().render();
         siteDashboardPage = customiseSiteDashboardPage.addDashlet(Dashlets.WEB_QUICK_START, 1).render();
@@ -79,16 +92,17 @@ public class WqsDLIntegrationTests extends AbstractWQS {
         ShareUserDashboard.addPageToSite(drone, siteName, SitePageType.DATA_LISTS);
 
         // Site Dashboard is rendered with Data List link
-        ShareUser.openSiteDashboard(drone, siteName).render();
+        SiteUtil.openSiteDashboard(drone, siteName).render();
 
-        ShareUser.logout(drone);
+        ShareUtil.logout(drone);
     }
 
     /**
      * AONE-5593:Verify correct displaying of comments in Share Data lists
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5593() throws Exception {
+    public void AONE_5593() throws Exception
+    {
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -129,14 +143,14 @@ public class WqsDLIntegrationTests extends AbstractWQS {
         // Login in Alfresco Share as admin;
         // --- Expected results ---
         // Admin is logged in Alfresco Share;
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // --- Step 3 ---
         // --- Step action ---
         // Open WCMQS site's dashboard;
         // --- Expected results ---
         // Site's dashboard is opened;
-        DocumentLibraryPage docLibPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName).render();
+        DocumentLibraryPage docLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
 
         // --- Step 4 ---
         // --- Step action ---
@@ -163,14 +177,15 @@ public class WqsDLIntegrationTests extends AbstractWQS {
         Assert.assertEquals(newFeedback.getVisitorComment(), visitorComment, "Recently created comment for blog is not present in data list");
         Assert.assertEquals(newFeedback.getRelevantAsset(), blogName, "Blog file name is not present in data list");
 
-        ShareUser.logout(drone);
+        ShareUtil.logout(drone);
     }
 
     /**
      * AONE-5594:Verify correct work of report post function
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5594() throws Exception {
+    public void AONE_5594() throws Exception
+    {
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -211,14 +226,15 @@ public class WqsDLIntegrationTests extends AbstractWQS {
         // Login in Alfresco Share as admin;
         // --- Expected results ---
         // Admin is logged in Alfresco Share;
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // --- Step 3 ---
         // --- Step action ---
         // Navigate to WCMQS site's Data list;
         // --- Expected results ---
         // Data list page is opened;
-        DocumentLibraryPage docLibPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName).render();
+
+        DocumentLibraryPage docLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         DataListPage dataListPage = docLibPage.getSiteNav().selectDataListPage().render();
 
         // --- Step 4 ---
@@ -271,9 +287,11 @@ public class WqsDLIntegrationTests extends AbstractWQS {
         // Navigate to Visitors feedback data list again;
         // --- Expected results ---
         // Visitors feedback data list is opened;
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
-        DocumentLibraryPage docLibPage2 = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName).render();
+//        DocumentLibraryPage docLibPage2 = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName).render();
+
+        DocumentLibraryPage docLibPage2 = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         DataListPage dataListPage2 = docLibPage2.getSiteNav().selectDataListPage().render();
         dataListPage2.selectDataList("Visitor Feedback (Quick Start Editorial)");
 
@@ -288,6 +306,6 @@ public class WqsDLIntegrationTests extends AbstractWQS {
         VisitorFeedbackRow newFeedback2 = feedbackList.getRowForSpecificValues(visitorEmail, visitorComment, visitorName, visitorWebsite);
         Assert.assertEquals(newFeedback2.getCommnetFlag(), "true", "Comment has been flagged field is " + newFeedback2.getCommnetFlag());
 
-        ShareUser.logout(drone);
+        ShareUtil.logout(drone);
     }
 }
