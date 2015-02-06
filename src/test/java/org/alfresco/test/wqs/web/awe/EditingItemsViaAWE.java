@@ -1,5 +1,6 @@
 package org.alfresco.test.wqs.web.awe;
 
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
@@ -13,9 +14,11 @@ import org.alfresco.po.share.wqs.*;
 import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.test.FailedTestListener;
+import org.alfresco.test.util.SiteService;
 import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.Keys;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
@@ -70,12 +73,13 @@ public class EditingItemsViaAWE extends AbstractWQS {
         // ---- Step 1 ----
         // ---- Step Action -----
         // WCM Quick Start is installed; - is not required to be executed automatically
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 2 ----
         // ---- Step Action -----
         // Site "My Web Site" is created in Alfresco Share;
-        ShareUser.createSite(drone, siteName, SITE_VISIBILITY_PUBLIC);
+        SiteService siteService = (SiteService) ctx.getBean("siteService");
+        siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
 
         // ---- Step 3 ----
         // ---- Step Action -----

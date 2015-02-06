@@ -5,6 +5,7 @@ import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
 import org.alfresco.po.share.site.CustomiseSiteDashboardPage;
+import org.alfresco.po.share.site.CustomizeSitePage;
 import org.alfresco.po.share.site.SiteDashboardPage;
 import org.alfresco.po.share.site.SitePageType;
 import org.alfresco.po.share.site.datalist.DataListPage;
@@ -13,7 +14,6 @@ import org.alfresco.po.share.site.datalist.lists.VisitorFeedbackList;
 import org.alfresco.po.share.site.document.DocumentLibraryPage;
 import org.alfresco.po.share.util.SiteUtil;
 import org.alfresco.po.share.wqs.*;
-import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.test.FailedTestListener;
 import org.alfresco.test.util.SiteService;
 import org.alfresco.test.wqs.uitl.AbstractWQS;
@@ -22,6 +22,9 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Listeners(FailedTestListener.class)
 public class WqsDLIntegrationTests extends AbstractWQS
@@ -39,9 +42,7 @@ public class WqsDLIntegrationTests extends AbstractWQS
     {
         super.setup();
         testName = this.getClass().getSimpleName();
-        // newsName = "cont2" + getFileName(testName) + ".html";
-        // siteName = getSiteName(testName);
-//        siteName = "Share-55952SiteNameZ2";
+
         siteName = getSiteName(testName) + System.currentTimeMillis();
         logger.info("Start tests:" + testName);
 
@@ -89,7 +90,10 @@ public class WqsDLIntegrationTests extends AbstractWQS
         wqsDashlet.waitForImportMessage();
 
         // Data Lists component is added to the site
-        ShareUserDashboard.addPageToSite(drone, siteName, SitePageType.DATA_LISTS);
+        CustomizeSitePage customizeSitePage = siteDashboardPage.getSiteNav().selectCustomizeSite().render();
+        List<SitePageType> addPageTypes = new ArrayList<SitePageType>();
+        addPageTypes.add(SitePageType.DATA_LISTS);
+        customizeSitePage.addPages(addPageTypes).render();
 
         // Site Dashboard is rendered with Data List link
         SiteUtil.openSiteDashboard(drone, siteName).render();

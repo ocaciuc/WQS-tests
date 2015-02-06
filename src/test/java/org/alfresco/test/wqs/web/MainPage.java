@@ -4,17 +4,21 @@ package org.alfresco.test.wqs.web;
  * Created by P3700473 on 12/2/2014.
  */
 
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
 import org.alfresco.po.share.site.SiteDashboardPage;
 import org.alfresco.po.share.site.document.DocumentLibraryPage;
 import org.alfresco.po.share.site.document.EditDocumentPropertiesPage;
+import org.alfresco.po.share.util.SiteUtil;
 import org.alfresco.po.share.wqs.*;
 import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
+import org.alfresco.test.util.SiteService;
 import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -31,7 +35,7 @@ import static org.hamcrest.Matchers.containsString;
  * Created by Lucian Tuca on 12/02/2014.
  */
 public class MainPage extends AbstractWQS
-    {
+{
     private static final Logger logger = Logger.getLogger(MainPage.class);
     private final String ALFRESCO_QUICK_START = "Alfresco Quick Start";
     private final String QUICK_START_EDITORIAL = "Quick Start Editorial";
@@ -49,46 +53,47 @@ public class MainPage extends AbstractWQS
     @Override
     @BeforeClass(alwaysRun = true)
     public void setup() throws Exception
-        {
+    {
         super.setup();
 
         testName = this.getClass().getSimpleName();
         siteName = testName;
         hostName = (shareUrl).replaceAll(".*\\//|\\:.*", "");
         try
-            {
+        {
             ipAddress = InetAddress.getByName(hostName).toString().replaceAll(".*/", "");
             logger.info("Ip address from Alfresco server was obtained");
-            } catch (UnknownHostException | SecurityException e)
-            {
+        } catch (UnknownHostException | SecurityException e)
+        {
             logger.error("Ip address from Alfresco server could not be obtained");
-            }
+        }
 
         ;
         wqsURL = siteName + ":8080/wcmqs";
         logger.info(" wcmqs url : " + wqsURL);
         logger.info("Start Tests from: " + testName);
-        }
+    }
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
-        {
+    {
         super.tearDown();
-        }
+    }
 
     @Test(groups = {"DataPrepWQS"})
     public void dataPrep_AONE() throws Exception
-        {
+    {
         // User login
         // ---- Step 1 ----
         // ---- Step Action -----
         // WCM Quick Start is installed; - is not required to be executed automatically
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 2 ----
         // ---- Step Action -----
         // Site "My Web Site" is created in Alfresco Share;
-        ShareUser.createSite(drone, siteName, SITE_VISIBILITY_PUBLIC);
+        SiteService siteService = (SiteService) ctx.getBean("siteService");
+        siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
 
         // ---- Step 3 ----
         // ---- Step Action -----
@@ -99,7 +104,7 @@ public class MainPage extends AbstractWQS
         wqsDashlet.clickImportButtton();
 
         //Change property for quick start to sitename
-        DocumentLibraryPage documentLibPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        DocumentLibraryPage documentLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         documentLibPage.selectFolder("Alfresco Quick Start");
         EditDocumentPropertiesPage documentPropertiesPage = documentLibPage.getFileDirectoryInfo("Quick Start Editorial").selectEditProperties()
                 .render();
@@ -116,14 +121,14 @@ public class MainPage extends AbstractWQS
                 + " >> %WINDIR%\\System32\\Drivers\\Etc\\hosts";
         Runtime.getRuntime().exec(setHostAddress);
 
-        }
+    }
 
     /*
     * AONE-5656 Main page
     */
     @Test(groups = {"WQS"})
     public void AONE_5656() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -169,14 +174,14 @@ public class MainPage extends AbstractWQS
         Assert.assertTrue(mainPage.isLatestBlogArticlesDisplayed());
 
         System.out.println("a");
-        }
+    }
 
     /*
     * AONE-5657 Verify correct navigation from main page
     */
     @Test(groups = {"WQS"})
     public void AONE_5657() throws Exception
-        {
+    {
 
         navigateTo(wqsURL);
         WcmqsHomePage mainPage = new WcmqsHomePage(drone).render();
@@ -249,14 +254,14 @@ public class MainPage extends AbstractWQS
         blogPage.clickAlfrescoLink();
         pageTitle = drone.getTitle();
         Assert.assertTrue(pageTitle.contains("Alfresco"));
-        }
+    }
 
     /*
     * AONE-5658 Opening articles from main page
     */
     @Test(groups = {"WQS"})
     public void AONE_5658() throws Exception
-        {
+    {
 
         navigateTo(wqsURL);
         WcmqsHomePage mainPage = new WcmqsHomePage(drone).render();
@@ -424,14 +429,14 @@ public class MainPage extends AbstractWQS
         mainPage.clickOnSlideShowReadme(3);
         assertThat("Verify if the correct page opened ", mainPage.getTitle(), containsString(WcmqsNewsPage.CREDIT_CARDS));
 
-        }
+    }
 
     /*
     * AONE-5660 Adding new section in wcmqs site
     */
     @Test(groups = {"WQS"})
     public void AONE_5660() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -439,9 +444,9 @@ public class MainPage extends AbstractWQS
         // ---- Expected results ----
         // root folder is opened;
 
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
-        DocumentLibraryPage documentLibraryPage = ShareUser.openSitesDocumentLibrary(drone, siteName).render();
+        DocumentLibraryPage documentLibraryPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(ALFRESCO_QUICK_START).render();
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(QUICK_START_EDITORIAL).render();
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(ROOT).render();
@@ -477,42 +482,42 @@ public class MainPage extends AbstractWQS
         waitAndOpenNewSection(homePage, ACCOUNTING, 4);
         String pageTitle = drone.getTitle();
 
-        }
+    }
 
     public void navigateTo(String url)
-        {
+    {
         drone.navigateTo(url);
-        }
+    }
 
     private void waitAndOpenNewSection(WcmqsHomePage homePage, String menuOption, int minutesToWait)
-        {
+    {
         int waitInMilliSeconds = 3000;
         int maxTimeWaitInMilliSeconds = 60000 * minutesToWait;
         boolean sectionFound = false;
 
         while (!sectionFound && maxTimeWaitInMilliSeconds > 0)
-            {
+        {
             try
-                {
+            {
                 homePage.selectMenu(menuOption);
                 sectionFound = true;
-                } catch (Exception e)
-                {
+            } catch (Exception e)
+            {
                 synchronized (this)
-                    {
+                {
                     try
-                        {
+                    {
                         this.wait(waitInMilliSeconds);
-                        } catch (InterruptedException ex)
-                        {
-                        }
+                    } catch (InterruptedException ex)
+                    {
                     }
+                }
                 drone.refresh();
                 maxTimeWaitInMilliSeconds = maxTimeWaitInMilliSeconds - waitInMilliSeconds;
-                }
-
             }
 
         }
 
     }
+
+}

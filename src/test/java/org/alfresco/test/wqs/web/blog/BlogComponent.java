@@ -19,6 +19,8 @@ import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
+import org.alfresco.po.share.site.CustomiseSiteDashboardPage;
+import org.alfresco.po.share.site.CustomizeSitePage;
 import org.alfresco.po.share.site.SiteDashboardPage;
 import org.alfresco.po.share.site.SitePageType;
 import org.alfresco.po.share.site.datalist.DataListPage;
@@ -27,12 +29,13 @@ import org.alfresco.po.share.site.datalist.items.VisitorFeedbackRowProperties;
 import org.alfresco.po.share.site.datalist.lists.VisitorFeedbackList;
 import org.alfresco.po.share.site.document.DocumentLibraryPage;
 import org.alfresco.po.share.site.document.EditDocumentPropertiesPage;
+import org.alfresco.po.share.util.SiteUtil;
 import org.alfresco.po.share.wqs.*;
-import org.alfresco.share.util.ShareUser;
-import org.alfresco.share.util.ShareUserDashboard;
+import org.alfresco.test.util.SiteService;
 import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -40,6 +43,8 @@ import org.testng.annotations.Test;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -52,7 +57,7 @@ import static org.hamcrest.Matchers.*;
  * 01/09/2015
  */
 public class BlogComponent extends AbstractWQS
-    {
+{
     private static final Logger logger = Logger.getLogger(BlogComponent.class);
     private String wqsURL;
     private String siteName;
@@ -61,36 +66,36 @@ public class BlogComponent extends AbstractWQS
     @Override
     @BeforeClass(alwaysRun = true)
     public void setup() throws Exception
-        {
+    {
         super.setup();
-        String testName = this.getClass().getSimpleName();
-        siteName = testName;
+//        String testName = this.getClass().getSimpleName();
+        siteName = this.getClass().getSimpleName() + "1";
         String hostName = (shareUrl).replaceAll(".*\\//|\\:.*", "");
         try
-            {
+        {
             ipAddress = InetAddress.getByName(hostName).toString().replaceAll(".*/", "");
             logger.info("Ip address from Alfresco server was obtained");
-            } catch (UnknownHostException | SecurityException e)
-            {
+        } catch (UnknownHostException | SecurityException e)
+        {
             logger.error("Ip address from Alfresco server could not be obtained");
-            }
+        }
 
         ;
         wqsURL = siteName + ":8080/wcmqs";
         logger.info(" wcmqs url : " + wqsURL);
         logger.info("Start Tests from: " + testName);
 
-        }
+    }
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
-        {
+    {
         super.tearDown();
-        }
+    }
 
-    @Test(groups = {"DataPrepWQS"})
+   // @Test(groups = {"DataPrepWQS"})
     public void dataPrep_AONE() throws Exception
-        {
+    {
         // User login
         // ---- Step 1 ----
         // ---- Step Action -----
@@ -101,18 +106,24 @@ public class BlogComponent extends AbstractWQS
         // ---- Step 2 ----
         // ---- Step Action -----
         // Site "My Web Site" is created in Alfresco Share;
-        ShareUser.createSite(drone, siteName, SITE_VISIBILITY_PUBLIC);
+        SiteService siteService = (SiteService) ctx.getBean("siteService");
+        siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
+//        ShareUser.createSite(drone, siteName, SITE_VISIBILITY_PUBLIC);
 
         // ---- Step 3 ----
         // ---- Step Action -----
         // WCM Quick Start Site Data is imported;
-        SiteDashboardPage siteDashBoard = ShareUserDashboard.addDashlet(drone, siteName, Dashlets.WEB_QUICK_START);
-        SiteWebQuickStartDashlet wqsDashlet = siteDashBoard.getDashlet(SITE_WEB_QUICK_START_DASHLET).render();
+        SiteDashboardPage siteDashboardPage = (SiteDashboardPage) SiteUtil.openSiteDashboard(drone, siteName);
+        CustomiseSiteDashboardPage customiseSiteDashboardPage = siteDashboardPage.getSiteNav().selectCustomizeDashboard().render();
+        siteDashboardPage = customiseSiteDashboardPage.addDashlet(Dashlets.WEB_QUICK_START, 1).render();
+
+//        SiteDashboardPage siteDashBoard = ShareUserDashboard.addDashlet(drone, siteName, Dashlets.WEB_QUICK_START);
+        SiteWebQuickStartDashlet wqsDashlet = siteDashboardPage.getDashlet(SITE_WEB_QUICK_START_DASHLET).render();
         wqsDashlet.selectWebsiteDataOption(WebQuickStartOptions.FINANCE);
         wqsDashlet.clickImportButtton();
 
         // Change property for quick start to sitename
-        DocumentLibraryPage documentLibPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        DocumentLibraryPage documentLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         documentLibPage.selectFolder("Alfresco Quick Start");
         EditDocumentPropertiesPage documentPropertiesPage = documentLibPage.getFileDirectoryInfo("Quick Start Editorial").selectEditProperties().render();
         documentPropertiesPage.setSiteHostname(siteName);
@@ -123,26 +134,28 @@ public class BlogComponent extends AbstractWQS
         documentPropertiesPage.setSiteHostname(ipAddress);
         documentPropertiesPage.clickSave();
 
-        ShareUser.openSiteDashboard(drone, siteName);
+        SiteUtil.openSiteDashboard(drone, siteName);
         // Data Lists component is added to the site
-        ShareUserDashboard.addPageToSite(drone, siteName, SitePageType.DATA_LISTS);
+        CustomizeSitePage customizeSitePage = siteDashboardPage.getSiteNav().selectCustomizeSite().render();
+        List<SitePageType> addPageTypes = new ArrayList<SitePageType>();
+        addPageTypes.add(SitePageType.DATA_LISTS);
 
         // Site Dashboard is rendered with Data List link
-        ShareUser.openSiteDashboard(drone, siteName).render();
+        SiteUtil.openSiteDashboard(drone, siteName).render();
 
         // setup new entry in hosts to be able to access the new wcmqs site
         String setHostAddress = "cmd.exe /c echo. >> %WINDIR%\\System32\\Drivers\\Etc\\hosts && echo " + ipAddress + " " + siteName
                 + " >> %WINDIR%\\System32\\Drivers\\Etc\\hosts";
         Runtime.getRuntime().exec(setHostAddress);
 
-        }
+    }
 
     /*
      * AONE-5673 Blogs page
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5673() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -176,14 +189,14 @@ public class BlogComponent extends AbstractWQS
         Assert.assertTrue(blogPage.isBlogPostDateDisplayed());
         Assert.assertTrue(blogPage.isBlogPostCreatorDisplayed());
         Assert.assertTrue(blogPage.isBlogPostCommentsLinkDisplayed());
-        }
+    }
 
     /*
      * AONE-5674 Opening blog post
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5674() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -274,14 +287,14 @@ public class BlogComponent extends AbstractWQS
         blogPage.clickReadMoreByBlog(WcmqsBlogPage.ANALYSTS_LATEST_THOUGHTS);
         assertThat("Verify if the correct page opened ", blogPage.getTitle(), containsString(WcmqsBlogPage.ANALYSTS_LATEST_THOUGHTS));
 
-        }
+    }
 
     /*
      * AONE-5675 Pagination
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5675() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -310,14 +323,14 @@ public class BlogComponent extends AbstractWQS
 
         assertThat("Verify if the correct number of blog pages is displayed ", blogPage.getBlogPosts(), is(equalTo(3)));
 
-        }
+    }
 
     /*
      * AONE-5676 Commenting a blog post
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5676() throws Exception
-        {
+    {
 
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
@@ -375,8 +388,8 @@ public class BlogComponent extends AbstractWQS
         // ---- Expected results ----
         // Site is opened successfully;
 
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
-        DocumentLibraryPage docLibPage = ShareUser.openSitesDocumentLibrary(drone, siteName).render();
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
+        DocumentLibraryPage docLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
 
         // ---- Step 5 ----
         // ---- Step action ----
@@ -403,14 +416,14 @@ public class BlogComponent extends AbstractWQS
         assertThat(newFeedback.getVisitorComment(), is(equalTo(visitorComment)));
         assertThat(newFeedback.getVisitorWebsite(), is(equalTo(visitorWebsite)));
 
-        }
+    }
 
     /*
      * AONE-5677 Verify correct work of comments number value
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5677() throws Exception
-        {
+    {
         String visitorName = "name " + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -433,8 +446,8 @@ public class BlogComponent extends AbstractWQS
         // ---- Expected results ----
         // Site is opened successfully;
         navigateTo(getShareUrl());
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
-        SiteDashboardPage shareSite = ShareUser.openSiteDashboard(drone, siteName);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
+        SiteDashboardPage shareSite = SiteUtil.openSiteDashboard(drone, siteName).render();
 
         // ---- Step 2 ----
         // ---- Step action ----
@@ -487,14 +500,14 @@ public class BlogComponent extends AbstractWQS
         WcmqsComment wcmqsComment = new WcmqsComment(drone).render();
         assertThat(wcmqsComment.getNumberOfCommentsOnPage(), is(equalTo(3)));
 
-        }
+    }
 
     /*
      * AONE-5678 Creating comment with wildcards in blog
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5678() throws Exception
-        {
+    {
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -621,7 +634,7 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Posting was succesfull", wcmqsBlogPostPage.isAddCommentMessageDisplay());
 
-        }
+    }
 
     /*
      * AONE-5680 Verifying correct work of name field on comment form
@@ -629,7 +642,7 @@ public class BlogComponent extends AbstractWQS
      */
     @Test(groups = {"WQS", "EnterpriseOnly", "ProductBug"})
     public void AONE_5680() throws Exception
-        {
+    {
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -676,14 +689,14 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Check if posting was succesfull", wcmqsBlogPostPage.isAddCommentMessageDisplay());
 
-        }
+    }
 
     /*
      * AONE-5681 Commenting blog post with empty mandatory fields
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5681() throws Exception
-        {
+    {
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -792,14 +805,14 @@ public class BlogComponent extends AbstractWQS
 
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Verify comment textfield error is displayed", wcmqsBlogPostPage.getFormErrorMessages(), hasItem(equalTo("please enter a comment")));
-        }
+    }
 
     /*
      * AONE-5682 Checking correct work of Email field
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5682() throws Exception
-        {
+    {
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
         String visitorWebsite = "website " + getTestName();
@@ -892,14 +905,14 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Posting was succesfull", wcmqsBlogPostPage.isAddCommentMessageDisplay());
 
-        }
+    }
 
     /*
      * AONE-5683 Reporting post
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5683() throws Exception
-        {
+    {
 
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
@@ -941,8 +954,10 @@ public class BlogComponent extends AbstractWQS
         // Visitor Feedback data list is opened;
 
         navigateTo(getShareUrl());
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
-        DataListPage dataListPage = ShareUser.openSiteDashboard(drone, siteName).render().getSiteNav().selectDataListPage().render();
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
+
+        SiteDashboardPage siteDashboardPage2 = SiteUtil.openSiteDashboard(drone, siteName).render();
+        DataListPage dataListPage = siteDashboardPage2.getSiteNav().selectDataListPage().render();
         dataListPage.selectDataList("Visitor Feedback (Quick Start Editorial)");
         VisitorFeedbackList feedbackList = new VisitorFeedbackList(drone);
         feedbackList.render();
@@ -1015,14 +1030,14 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage = new WcmqsBlogPostPage(drone);
         assertThat("Verify if the new feedback comment has re-appeared", wcmqsBlogPostPage.getFeedBackComments(), hasItem(visitorComment));
 
-        }
+    }
 
     /*
      * AONE-5684 Verify correct work of Leave Comment form
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5684() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -1068,14 +1083,15 @@ public class BlogComponent extends AbstractWQS
         blogPage.clickLinkByTitle(WcmqsBlogPage.ETHICAL_FUNDS);
         wcmqsBlogPostPage = new WcmqsBlogPostPage(drone);
         assertThat("Leave comment form is displayed ", wcmqsBlogPostPage.isLeaveCommentFormDisplayed());
-        }
+    }
 
     @Test(groups = "DataPrepWQS")
     public void dataPrep_AONE_5685() throws Exception
-        {
+    {
         // ---- Data prep ----
-        ShareUser.openSiteDashboard(drone, siteName);
-        DocumentLibraryPage documentLibPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        SiteUtil.openSiteDashboard(drone, siteName);
+        DocumentLibraryPage documentLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
+
         documentLibPage.selectFolder("Alfresco Quick Start");
         documentLibPage.selectFolder("Quick Start Editorial");
         documentLibPage.selectFolder("root");
@@ -1085,14 +1101,14 @@ public class BlogComponent extends AbstractWQS
         documentLibPage.getFileDirectoryInfo("blog3.html").addTag("testtag 2");
 
         documentLibPage.getFileDirectoryInfo("index.html");
-        }
+    }
 
     /*
      * AONE-5685 Section tags
      */
     @Test(groups = {"WQS"})
     public void AONE_5685() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -1143,14 +1159,14 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPage.clickTag("testtag 2 (1)");
         wcmqsSearchPage = new WcmqsSearchPage(drone);
         assertThat("Check if the number of results is correct", wcmqsSearchPage.getTagSearchResults().size(), is(equalTo(1)));
-        }
+    }
 
     /*
      * AONE-5679 Adding blog post comment with too long data
      */
     @Test(groups = {"WQS"})
     public void AONE_5679() throws Exception
-        {
+    {
 
         String visitorName = "name" + getTestName();
         String visitorEmail = getTestName() + "@" + DOMAIN_FREE;
@@ -1274,11 +1290,11 @@ public class BlogComponent extends AbstractWQS
         wcmqsBlogPostPage.clickPostButton();
         assertThat("Posting was succesfull", wcmqsBlogPostPage.isAddCommentMessageDisplay());
 
-        }
+    }
 
     public void navigateTo(String url)
-        {
+    {
         drone.navigateTo(url);
-        }
-
     }
+
+}

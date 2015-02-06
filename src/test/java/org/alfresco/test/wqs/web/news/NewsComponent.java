@@ -1,6 +1,7 @@
 package org.alfresco.test.wqs.web.news;
 
 import org.alfresco.po.share.ShareLink;
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
@@ -8,12 +9,13 @@ import org.alfresco.po.share.site.SiteDashboardPage;
 import org.alfresco.po.share.site.SitePageType;
 import org.alfresco.po.share.site.document.DocumentLibraryPage;
 import org.alfresco.po.share.site.document.EditDocumentPropertiesPage;
+import org.alfresco.po.share.util.SiteUtil;
 import org.alfresco.po.share.wqs.*;
-import org.alfresco.share.util.ShareUser;
-import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.test.FailedTestListener;
+import org.alfresco.test.util.SiteService;
 import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -36,7 +38,7 @@ import static org.hamcrest.Matchers.hasItem;
 
 @Listeners(FailedTestListener.class)
 public class NewsComponent extends AbstractWQS
-    {
+{
     private static final Logger logger = Logger.getLogger(NewsComponent.class);
     private final String ALFRESCO_QUICK_START = "Alfresco Quick Start";
     private final String QUICK_START_EDITORIAL = "Quick Start Editorial";
@@ -52,7 +54,7 @@ public class NewsComponent extends AbstractWQS
     @Override
     @BeforeClass(alwaysRun = true)
     public void setup() throws Exception
-        {
+    {
         super.setup();
         String testName = this.getClass().getSimpleName();
         siteName = testName;
@@ -63,40 +65,41 @@ public class NewsComponent extends AbstractWQS
 
         String hostName = (shareUrl).replaceAll(".*\\//|\\:.*", "");
         try
-            {
+        {
             ipAddress = InetAddress.getByName(hostName).toString().replaceAll(".*/", "");
             logger.info("Ip address from Alfresco server was obtained");
-            } catch (UnknownHostException | SecurityException e)
-            {
+        } catch (UnknownHostException | SecurityException e)
+        {
             logger.error("Ip address from Alfresco server could not be obtained");
-            }
+        }
 
         ;
         wqsURL = siteName + ":8080/wcmqs";
         logger.info(" wcmqs url : " + wqsURL);
         logger.info("Start Tests from: " + testName);
 
-        }
+    }
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
-        {
+    {
         super.tearDown();
-        }
+    }
 
     @Test(groups = {"DataPrepWQS"})
     public void dataPrep_AONE() throws Exception
-        {
+    {
         // User login
         // ---- Step 1 ----
         // ---- Step Action -----
         // WCM Quick Start is installed; - is not required to be executed automatically
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 2 ----
         // ---- Step Action -----
         // Site "My Web Site" is created in Alfresco Share;
-        ShareUser.createSite(drone, siteName, SITE_VISIBILITY_PUBLIC);
+        SiteService siteService = (SiteService) ctx.getBean("siteService");
+        siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
 
         // ---- Step 3 ----
         // ---- Step Action -----
@@ -107,7 +110,7 @@ public class NewsComponent extends AbstractWQS
         wqsDashlet.clickImportButtton();
 
         // Change property for quick start to sitename
-        DocumentLibraryPage documentLibPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        DocumentLibraryPage documentLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         documentLibPage.selectFolder("Alfresco Quick Start");
         EditDocumentPropertiesPage documentPropertiesPage = documentLibPage.getFileDirectoryInfo("Quick Start Editorial").selectEditProperties().render();
         documentPropertiesPage.setSiteHostname(siteName);
@@ -118,7 +121,7 @@ public class NewsComponent extends AbstractWQS
         documentPropertiesPage.setSiteHostname(ipAddress);
         documentPropertiesPage.clickSave();
 
-        ShareUser.openSiteDashboard(drone, siteName);
+        SiteUtil.openSiteDashboard(drone, siteName).render();
         // Data Lists component is added to the site
         ShareUserDashboard.addPageToSite(drone, siteName, SitePageType.DATA_LISTS);
 
@@ -133,14 +136,14 @@ public class NewsComponent extends AbstractWQS
         String setHostAddress = "cmd.exe /c echo. >> %WINDIR%\\System32\\Drivers\\Etc\\hosts && echo " + ipAddress + " " + siteName
                 + " >> %WINDIR%\\System32\\Drivers\\Etc\\hosts";
         Runtime.getRuntime().exec(setHostAddress);
-        }
+    }
 
     /*
      * AONE-5686 News
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5686() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -163,9 +166,9 @@ public class NewsComponent extends AbstractWQS
         List<String> links = new ArrayList<String>();
         List<ShareLink> shareLinks = homePage.getAllFoldersFromMenu("news");
         for (ShareLink sharelink : shareLinks)
-            {
+        {
             links.add(sharelink.getHref());
-            }
+        }
         assertThat("Folder list contains correct news folders", links, hasItem(containsString("companies")));
         assertThat("Folder list contains correct news folders", links, hasItem(containsString("markets")));
         assertThat("Folder list contains correct news folders", links, hasItem(containsString("global")));
@@ -199,14 +202,14 @@ public class NewsComponent extends AbstractWQS
         homePage.openNewsPageFolder("markets").render();
         assertThat("Reached page is markets", homePage.getTitle(), containsString("Markets"));
 
-        }
+    }
 
     /*
      * AONE-5702 News - Markets
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5702() throws Exception
-        {
+    {
         String newsName = "article6";
         String expectedNewsTitle = "Investors fear rising risk of US regional defaults";
         String expectedNewsDesc = "No malorum consulatu eam, quod dicunt adhuc numquam. Lorem labores senserit at ius, cu vel viim te adhuc numquam. Lorem labores senserit at ius, cu vel viim te adhuc idisse recusabo omittantur.";
@@ -241,14 +244,14 @@ public class NewsComponent extends AbstractWQS
         Assert.assertNotEquals(newsPage.getRightHeadlineTitleNews().size(), 0, "List of related articles is empty.");
         Assert.assertNotEquals(newsPage.getTagList().size(), 0, "List of tags link is displayed and it is empty.");
 
-        }
+    }
 
     /*
      * AONE-5703 News - Markets articles(v 3.4)
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5703() throws Exception
-        {
+    {
         String newsTitle1 = "Investors fear rising risk of US regional defaults";
 
         // ---- Step 1 ----
@@ -327,14 +330,14 @@ public class NewsComponent extends AbstractWQS
 
         // TODO 6: Add your code here for step 6.
 
-        }
+    }
 
     /*
      * AONE-5705 News - Markets - Related Articles
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5705() throws Exception
-        {
+    {
         // ---- Step 1 ----
         // ---- Step action ----
         // Navigate to http://host:8080/wcmqs
@@ -369,14 +372,14 @@ public class NewsComponent extends AbstractWQS
         Assert.assertEquals(newsArticleDetails.getTitleOfNewsArticle(), WcmqsNewsPage.FTSE_1000, "News article: " + WcmqsNewsPage.FTSE_1000
                 + " is not opened successfully.");
 
-        }
+    }
 
     /*
      * AONE-5706 News - Markets - Section Tags
      */
     @Test(groups = {"WQS", "EnterpriseOnly"})
     public void AONE_5706() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -436,7 +439,7 @@ public class NewsComponent extends AbstractWQS
         searchPage.render();
         Assert.assertEquals(searchPage.getTagSearchResults().size(), 1, "List of search results does not contain only one article");
 
-        }
+    }
 
     // TODO: Implement test AONE-5707
     // /*
@@ -489,7 +492,7 @@ public class NewsComponent extends AbstractWQS
     // }
 
     private void dataPrep_AONE_5706(DocumentLibraryPage documentLibPage) throws Exception
-        {
+    {
         // ---- Step 4 ----
         // ---- Step action ----
         // 4. The following tags are added to appropriate files via Alfresco Share:
@@ -516,6 +519,6 @@ public class NewsComponent extends AbstractWQS
         documentLibPage = new DocumentLibraryPage(drone);
         documentLibPage.selectFolder("companies");
         documentLibPage.getFileDirectoryInfo("article1.html").addTag(tag4);
-        }
-
     }
+
+}

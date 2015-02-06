@@ -2,6 +2,7 @@ package org.alfresco.test.wqs.share;
 
 import org.alfresco.po.share.ShareLink;
 import org.alfresco.po.share.SharePage;
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.AdvancedTinyMceEditor;
 import org.alfresco.po.share.dashlet.InsertOrEditLinkPage;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
@@ -12,14 +13,15 @@ import org.alfresco.po.share.site.CustomiseSiteDashboardPage;
 import org.alfresco.po.share.site.SiteDashboardPage;
 import org.alfresco.po.share.site.SiteType;
 import org.alfresco.po.share.site.document.*;
+import org.alfresco.po.share.util.SiteUtil;
 import org.alfresco.po.share.wqs.*;
-import org.alfresco.share.util.ShareUser;
-import org.alfresco.share.util.ShareUserSitePage;
-import org.alfresco.share.util.api.CreateUserAPI;
 import org.alfresco.test.FailedTestListener;
+import org.alfresco.test.util.SiteService;
+import org.alfresco.test.util.UserService;
 import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.remote.UnreachableBrowserException;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
@@ -31,7 +33,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testng.Assert.assertTrue;
 
 @Listeners(FailedTestListener.class)
-public class WqsShareTests extends AbstractWQS {
+public class WqsShareTests extends AbstractWQS
+{
     private static final Logger logger = Logger.getLogger(WqsShareTests.class);
     String newsName;
     ;
@@ -46,7 +49,8 @@ public class WqsShareTests extends AbstractWQS {
 
     @Override
     @BeforeClass(alwaysRun = true)
-    public void setup() throws Exception {
+    public void setup() throws Exception
+    {
         super.setup();
         testName = this.getClass().getSimpleName();
         newsName = "cont2" + getFileName(testName) + ".html";
@@ -58,27 +62,33 @@ public class WqsShareTests extends AbstractWQS {
     }
 
     @BeforeMethod(alwaysRun = true, groups = {"WQS"})
-    public void testSetup() throws Exception {
+    public void testSetup() throws Exception
+    {
         super.setup();
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() {
-        try {
+    public void tearDown()
+    {
+        try
+        {
             drone.quit();
-        } catch (UnreachableBrowserException e) {
+        } catch (UnreachableBrowserException e)
+        {
             logger.error("Browser communication failed.");
         }
     }
 
     @Test(groups = {"DataPrepWQS", "EnterpriseOnly"})
-    public void dataPrep() throws Exception {
+    public void dataPrep() throws Exception
+    {
         // Login
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
-
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_PASSWORD, ADMIN_PASSWORD);
         // Create Site
-        ShareUser.createSite(drone, siteName, AbstractWQS.SITE_VISIBILITY_PUBLIC).render();
-        SiteDashboardPage siteDashboardPage = ShareUser.openSiteDashboard(drone, siteName);
+        SiteService siteService = (SiteService) ctx.getBean("siteService");
+        siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
+
+        SiteDashboardPage siteDashboardPage = SiteUtil.openSiteDashboard(drone, siteName).render();
 
         CustomiseSiteDashboardPage customiseSiteDashboardPage = siteDashboardPage.getSiteNav().selectCustomizeDashboard().render();
         siteDashboardPage = customiseSiteDashboardPage.addDashlet(Dashlets.WEB_QUICK_START, 1).render();
@@ -88,14 +98,15 @@ public class WqsShareTests extends AbstractWQS {
         wqsDashlet.clickImportButtton();
         wqsDashlet.waitForImportMessage();
 
-        ShareUser.logout(drone);
+        ShareUtil.logout(drone);
     }
 
     /**
      * AONE-5595:Creating web site in Share
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5595() throws Exception {
+    public void AONE_5595() throws Exception
+    {
         // --- Step 1 ---
         // --- Step action ---
         // Click Create site link;
@@ -110,8 +121,10 @@ public class WqsShareTests extends AbstractWQS {
         String siteURL = testName + "SiteURL";
 
         // Create User1 (On-premise)
-        CreateUserAPI.CreateActivateUser(drone, ADMIN_USERNAME, userInfo1);
-        SharePage page = ShareUser.login(drone, user1, DEFAULT_PASSWORD);
+        UserService.create(shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD, user1, "password", user1);
+//        CreateUserAPI.CreateActivateUser(drone, ADMIN_USERNAME, userInfo1);
+        ShareUtil.loginAs(drone, shareUrl, user1, DEFAULT_PASSWORD);
+        SharePage page = drone.getCurrentPage().render();
 
         CreateSitePage createSitePage = page.getNav().selectCreateSite().render();
         assertTrue(createSitePage.isCreateSiteDialogDisplayed());
@@ -165,14 +178,15 @@ public class WqsShareTests extends AbstractWQS {
 
         assertTrue(wqsDashlet.isImportMessageDisplayed());
 
-        ShareUser.logout(drone);
+        ShareUtil.logout(drone);
     }
 
     /**
      * AONE-5596:Opening sample site for preview
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5596() throws Exception {
+    public void AONE_5596() throws Exception
+    {
         // ---- Step 1 ----
         // ---- Step Action -----
         // Navigate to http://host:8080/wcmqs
@@ -202,14 +216,15 @@ public class WqsShareTests extends AbstractWQS {
      * AONE-5597:Verifying imported items
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5597() throws Exception {
+    public void AONE_5597() throws Exception
+    {
         // ---- Step 1 ----
         // ---- Step Action
         // Navigate to any folder, where content is situated(e.g. Alfresco Quick Start > Quick Start Editorial);
         // ---- Expected results ----
         // Folder is opened successfully;
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
-        DocumentLibraryPage documentLibraryPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
+        DocumentLibraryPage documentLibraryPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(ALFRESCO_QUICK_START).render();
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(QUICK_START_EDITORIAL).render();
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(ROOT).render();
@@ -230,22 +245,23 @@ public class WqsShareTests extends AbstractWQS {
         drone.switchToWindow(newHandle);
 
         assertTrue(drone.getCurrentUrl().endsWith(INDEX_HTML));
-        ShareUser.logout(drone);
+        ShareUtil.logout(drone);
     }
 
     /**
      * AONE-5598:Verify correct work of "Preview web asset" function
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5598() throws Exception {
+    public void AONE_5598() throws Exception
+    {
 
         // ---- Step 1 ----
         // ---- Step Action
         // Open Document library component;
         // ---- Expected results ----
         // Document library is opened;
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
-        DocumentLibraryPage documentLibraryPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
+        DocumentLibraryPage documentLibraryPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
 
         // ---- Step 2 ----
         // ---- Step Action
@@ -279,22 +295,23 @@ public class WqsShareTests extends AbstractWQS {
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(QUICK_START_LIVE).render();
         Assert.assertTrue(documentLibraryPage.isFileUploadInstructionDisplayed(), "File upload instruction is displayed thus there are no files or folder on the page");
 
-        ShareUser.logout(drone);
+        ShareUtil.logout(drone);
 
     }
 
     @Test(dependsOnMethods = "dataPrep", groups = {"DataPrepWQS", "EnterpriseOnly"})
-    public void dataPrep_5600() throws Exception {
+    public void dataPrep_5600() throws Exception
+    {
         String expectedSiteConfiguration = "isEditorial=true";
 
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 1 ----
         // ---- Step Action ----
         // Navigate to Quick Start Editorial folder;
         // ---- Expected Results ----
         // Folder is opened successfully;
-        DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
+        DocumentLibraryPage documentLibraryPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(ALFRESCO_QUICK_START);
 
         // ---- Step 2 ----
@@ -319,7 +336,8 @@ public class WqsShareTests extends AbstractWQS {
      * AONE-5600:Editing Site's Data
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5600() throws Exception {
+    public void AONE_5600() throws Exception
+    {
         String testName = getTestName();
 
         String newsArticleTitle;
@@ -353,14 +371,16 @@ public class WqsShareTests extends AbstractWQS {
      * AONE-5601:Adding hyperlinks to content via inline-edit
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5601() throws Exception {
+    public void AONE_5601() throws Exception
+    {
         String testName = getTestName();
         String siteName = getSiteName(testName);
 
         //create site and import finance data in wqs dashlet
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
-        ShareUser.createSite(drone, siteName, AbstractWQS.SITE_VISIBILITY_PUBLIC).render();
-        SiteDashboardPage siteDashboardPage = ShareUser.openSiteDashboard(drone, siteName);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
+        SiteService siteService = (SiteService) ctx.getBean("siteService");
+        siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
+        SiteDashboardPage siteDashboardPage = SiteUtil.openSiteDashboard(drone, siteName).render();
 
         CustomiseSiteDashboardPage customiseSiteDashboardPage = siteDashboardPage.getSiteNav().selectCustomizeDashboard().render();
         siteDashboardPage = customiseSiteDashboardPage.addDashlet(Dashlets.WEB_QUICK_START, 1).render();
@@ -375,7 +395,7 @@ public class WqsShareTests extends AbstractWQS {
         // In Share, go to root/news folder;
         // --- Expected results ---
         // Folder is opened;
-        DocumentLibraryPage documentLibraryPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        DocumentLibraryPage documentLibraryPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
 
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(ALFRESCO_QUICK_START).render();
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder(QUICK_START_EDITORIAL).render();
@@ -431,20 +451,21 @@ public class WqsShareTests extends AbstractWQS {
         Assert.assertEquals(randomText, tinyMceEditor2.getText());
         Assert.assertTrue(tinyMceEditor2.getContent().contains("<a href=\"http://www.alfresco.com/\" data-mce-href=\"http://www.alfresco.com/\">" + randomText + "</a>"), "tinyMceEditor.getContent() is: " + tinyMceEditor2.getContent());
 
-        ShareUser.logout(drone);
+        ShareUtil.logout(drone);
     }
 
     @Test(dependsOnMethods = "dataPrep", groups = {"DataPrepWQS", "EnterpriseOnly"})
-    public void dataPrep_5602() throws Exception {
+    public void dataPrep_5602() throws Exception
+    {
         // User login.
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 1 ----
         // ---- Step Action -----
         // Create an HTML article in Quick Start Editorial > root > news > global(e.g. article10.html).
         // Expected Result
         // HTML article is successfully created;
-        DocumentLibraryPage docLib = ShareUser.openSitesDocumentLibrary(drone, siteName).render();
+        DocumentLibraryPage docLib = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         docLib.selectFolder("Alfresco Quick Start").render();
         docLib.selectFolder("Quick Start Editorial").render();
         docLib.selectFolder("root").render();
@@ -463,7 +484,8 @@ public class WqsShareTests extends AbstractWQS {
      * AONE-5602:Verifying correct work of date/time function
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5602() throws Exception {
+    public void AONE_5602() throws Exception
+    {
         // ---- Step 2 ----
         // ---- Step Action -----
         // On the Quick Start website, navigate to the Global Economy page.
@@ -492,15 +514,16 @@ public class WqsShareTests extends AbstractWQS {
     }
 
     @Test(dependsOnMethods = "dataPrep", groups = {"DataPrepWQS", "EnterpriseOnly"})
-    public void dataPrep_5603() throws Exception {
+    public void dataPrep_5603() throws Exception
+    {
         String fileName1 = "Content_Platform.pdf";
         String fileName2 = "Community_Network.pdf";
 
         // User login.
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // create folders and files for the test
-        DocumentLibraryPage docLib = ShareUser.openSitesDocumentLibrary(drone, siteName).render();
+        DocumentLibraryPage docLib = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         docLib.selectFolder("Alfresco Quick Start").render();
         docLib.selectFolder("Quick Start Editorial").render();
         docLib.selectFolder("root").render();
@@ -540,7 +563,8 @@ public class WqsShareTests extends AbstractWQS {
      * AONE-5603:Edit offline a web quick start publication
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5603() throws Exception {
+    public void AONE_5603() throws Exception
+    {
         drone.navigateTo(wcmqsURL);
 
         // ---- Step 6 ----
@@ -569,12 +593,13 @@ public class WqsShareTests extends AbstractWQS {
     }
 
     @Test(dependsOnMethods = "dataPrep", groups = {"DataPrepWQS", "EnterpriseOnly"})
-    public void dataPrep_5604() throws Exception {
+    public void dataPrep_5604() throws Exception
+    {
         String modifiedTitle = testName + "_newTitle777";
         String newsArticle = "article4.html";
 
         // User login.
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 1 ----
         // ---- Step Action -----
@@ -582,7 +607,7 @@ public class WqsShareTests extends AbstractWQS {
         // global > article create above > and edit properties of the article (change the title).
         // Expected Result
         // Changes are applied.
-        DocumentLibraryPage docLib = ShareUser.openSitesDocumentLibrary(drone, siteName).render();
+        DocumentLibraryPage docLib = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         docLib.selectFolder("Alfresco Quick Start").render();
         docLib.selectFolder("Quick Start Editorial").render();
         docLib.selectFolder("root").render();
@@ -602,7 +627,8 @@ public class WqsShareTests extends AbstractWQS {
      * AONE-5604:Editing Web Site. No cache changes.
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5604() throws Exception {
+    public void AONE_5604() throws Exception
+    {
         String modifiedTitle = testName + "_newTitle";
         String newsArticle = "article4.html";
 
@@ -637,7 +663,8 @@ public class WqsShareTests extends AbstractWQS {
     }
 
     @Test(dependsOnMethods = "dataPrep", groups = {"DataPrepWQS", "EnterpriseOnly"})
-    public void dataPrep_5605() throws Exception {
+    public void dataPrep_5605() throws Exception
+    {
         String folder1 = "Folder 1";
         String folder2 = "Folder 2";
         String folder3 = "Folder 3";
@@ -646,7 +673,7 @@ public class WqsShareTests extends AbstractWQS {
         String folder112 = "Folder112";
 
         // User login.
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 1 ----
         // ---- Step Action -----
@@ -654,12 +681,15 @@ public class WqsShareTests extends AbstractWQS {
         // and'Submenu1-Item3'.
         // Expected Result
         // Folders are created.
-        ShareUser.openSitesDocumentLibrary(drone, siteName).render();
+        SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
 
         String blogFolder = "Alfresco Quick Start" + File.separator + "Quick Start Editorial" + File.separator + "root" + File.separator + "blog";
-        ShareUser.createFolderInFolder(drone, folder1, folder1, blogFolder).render();
-        ShareUser.createFolderInFolder(drone, folder2, folder1, blogFolder).render();
-        ShareUser.createFolderInFolder(drone, folder3, folder1, blogFolder).render();
+        SiteUtil.navigateToFolder(drone, blogFolder).render();
+        SiteUtil.createFolder(drone, folder1, folder1, "").render();
+        SiteUtil.navigateToFolder(drone, blogFolder).render();
+        SiteUtil.createFolder(drone, folder2, folder1, "").render();
+        SiteUtil.navigateToFolder(drone, blogFolder).render();
+        SiteUtil.createFolder(drone, folder3, folder1, "").render();
 
         // ---- Step 2 ----
         // ---- Step Action -----
@@ -667,7 +697,8 @@ public class WqsShareTests extends AbstractWQS {
         // Expected Result
         // Folders are created.
         blogFolder = blogFolder + File.separator + folder1;
-        ShareUser.createFolderInFolder(drone, folder11, folder11, blogFolder).render();
+        SiteUtil.navigateToFolder(drone, blogFolder).render();
+        SiteUtil.createFolder(drone, folder11, folder11, "").render();
 
         // ---- Step 3 ----
         // ---- Step Action -----
@@ -676,8 +707,10 @@ public class WqsShareTests extends AbstractWQS {
         // Expected Result
         // Folders are created.
         blogFolder = blogFolder + File.separator + folder11;
-        ShareUser.createFolderInFolder(drone, folder111, folder111, blogFolder).render();
-        ShareUser.createFolderInFolder(drone, folder112, folder112, blogFolder).render();
+        SiteUtil.navigateToFolder(drone, blogFolder).render();
+        SiteUtil.createFolder(drone, folder111, folder111, "").render();
+        SiteUtil.navigateToFolder(drone, blogFolder).render();
+        SiteUtil.createFolder(drone, folder112, folder112, "").render();
 
     }
 
@@ -685,7 +718,8 @@ public class WqsShareTests extends AbstractWQS {
      * AONE-5605:All WQS submenu items are displayed with normal zoom.
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5605() throws Exception {
+    public void AONE_5605() throws Exception
+    {
         drone.navigateTo(wcmqsURL);
 
         WcmqsHomePage homePage = new WcmqsHomePage(drone);
@@ -713,7 +747,8 @@ public class WqsShareTests extends AbstractWQS {
      * AONE-5606:Verify uploading a file when transformation fails in a folder inside a WQS site
      */
     @Test(groups = {"WQSShare", "EnterpriseOnly"})
-    public void AONE_5606() throws Exception {
+    public void AONE_5606() throws Exception
+    {
         String folder1 = "Folder5606";
         String fileName = "AONE-5606.docx";
         String rendConfig = "application/vnd.openxmlformats-officedocument.wordprocessingml.document=ws:swfPreview";
@@ -721,23 +756,24 @@ public class WqsShareTests extends AbstractWQS {
         File file = new File(DATA_FOLDER + SLASH + fileName);
 
         // User login.
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 1 ----
         // ---- Step Action -----
         // Already created in data prep
-        DocumentLibraryPage docLib = ShareUser.openSitesDocumentLibrary(drone, siteName).render();
+        DocumentLibraryPage docLib = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
 
         String blogFolder = "Alfresco Quick Start" + File.separator + "Quick Start Editorial" + File.separator + "root";
-        ShareUser.createFolderInFolder(drone, folder1, folder1, blogFolder).render();
+        SiteUtil.navigateToFolder(drone, blogFolder).render();
+        docLib = SiteUtil.createFolder(drone, folder1, folder1, "").render();
 
-        EditDocumentPropertiesPage editPage = ShareUserSitePage.getFileDirectoryInfo(drone, folder1).selectEditProperties();
+        EditDocumentPropertiesPage editPage = docLib.getFileDirectoryInfo(folder1).selectEditProperties();
         editPage.setRenditionConfig(rendConfig);
         editPage.selectSave().render();
 
         docLib.selectFolder(folder1).render();
 
-        ShareUserSitePage.uploadFile(drone, file).render();
+        SiteUtil.uploadFile(drone, file).render();
 
         Assert.assertTrue(docLib.isFileVisible(fileName));
 

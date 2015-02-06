@@ -15,20 +15,22 @@
 
 package org.alfresco.test.wqs.web.publications;
 
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
 import org.alfresco.po.share.site.SiteDashboardPage;
 import org.alfresco.po.share.site.document.DocumentLibraryPage;
 import org.alfresco.po.share.site.document.EditDocumentPropertiesPage;
+import org.alfresco.po.share.util.SiteUtil;
 import org.alfresco.po.share.wqs.WcmqsAllPublicationsPage;
 import org.alfresco.po.share.wqs.WcmqsHomePage;
 import org.alfresco.po.share.wqs.WcmqsPublicationPage;
 import org.alfresco.po.share.wqs.WcmqsSearchPage;
-import org.alfresco.share.util.ShareUser;
-import org.alfresco.share.util.ShareUserDashboard;
+import org.alfresco.test.util.SiteService;
 import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -42,7 +44,7 @@ import java.net.UnknownHostException;
  * Created by svidrascu on 11/19/2014.
  */
 public class PublicationActions extends AbstractWQS
-    {
+{
     private static final Logger logger = Logger.getLogger(PublicationActions.class);
     private String testName;
     private String wqsURL;
@@ -53,43 +55,44 @@ public class PublicationActions extends AbstractWQS
     @Override
     @BeforeClass(alwaysRun = true)
     public void setup() throws Exception
-        {
+    {
 
         testName = this.getClass().getSimpleName();
         siteName = testName;
         hostName = (shareUrl).replaceAll(".*\\//|\\:.*", "");
         try
-            {
+        {
             ipAddress = InetAddress.getByName(hostName).toString().replaceAll(".*/", "");
             logger.info("Ip address from Alfresco server was obtained");
-            } catch (UnknownHostException | SecurityException e)
-            {
+        } catch (UnknownHostException | SecurityException e)
+        {
             logger.error("Ip address from Alfresco server could not be obtained");
-            }
+        }
         wqsURL = siteName + ":8080/wcmqs";
         logger.info(" wcmqs url : " + wqsURL);
         logger.info("Start Tests from: " + testName);
-        }
+    }
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
-        {
+    {
         super.tearDown();
-        }
+    }
 
     @Test(groups = {"DataPrepWQS"})
     public void dataPrep_AONE() throws Exception
-        {
+    {
         // User login
         // ---- Step 1 ----
         // ---- Step Action -----
         // WCM Quick Start is installed; - is not required to be executed automatically
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 2 ----
         // ---- Step Action -----
         // Site "My Web Site" is created in Alfresco Share;
-        ShareUser.createSite(drone, siteName, SITE_VISIBILITY_PUBLIC);
+        SiteService siteService = (SiteService) ctx.getBean("siteService");
+        siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
 
         // ---- Step 3 ----
         // ---- Step Action -----
@@ -101,7 +104,7 @@ public class PublicationActions extends AbstractWQS
         wqsDashlet.waitForImportMessage();
 
         //Change property for quick start to sitename
-        DocumentLibraryPage documentLibPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        DocumentLibraryPage documentLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         documentLibPage.selectFolder("Alfresco Quick Start");
         EditDocumentPropertiesPage documentPropertiesPage = documentLibPage.getFileDirectoryInfo("Quick Start Editorial").selectEditProperties()
                 .render();
@@ -116,14 +119,14 @@ public class PublicationActions extends AbstractWQS
         String setHostAddress = "cmd.exe /c echo. >> %WINDIR%\\System32\\Drivers\\Etc\\hosts && echo " + ipAddress + " " + siteName
                 + " >> %WINDIR%\\System32\\Drivers\\Etc\\hosts";
         Runtime.getRuntime().exec(setHostAddress);
-        }
+    }
 
     /**
      * AONE-5661:Publications
      */
     @Test(groups = "WQS")
     public void AONE_5661() throws Exception
-        {
+    {
         // ---- Step 1 ----
         // ---- Step action ---
         // Navigate to http://host:8080/wcmqs
@@ -146,14 +149,14 @@ public class PublicationActions extends AbstractWQS
         wcmqsHomePage.render();
         wcmqsHomePage.openPublicationsPageFolder("white papers");
         Assert.assertTrue(wcmqsHomePage.getTitle().contains("White Papers"));
-        }
+    }
 
     /**
      * AONE-5662:Publications page
      */
     @Test(groups = "WQS")
     public void AONE_5662() throws Exception
-        {
+    {
         // ---- Step 1 ----
         // ---- Step action ---
         // Navigate to http://host:8080/wcmqs
@@ -170,14 +173,14 @@ public class PublicationActions extends AbstractWQS
         Assert.assertTrue(wcmqsAllPublicationsPage.getTitle().contains("Publications"));
         Assert.assertTrue(wcmqsAllPublicationsPage.getKeyPublicationsSection().isDisplayed());
         Assert.assertTrue(wcmqsAllPublicationsPage.getAllPublictionsTitles().size() > 3);
-        }
+    }
 
     /**
      * AONE-5663:Opening Documents from publications page
      */
     @Test(groups = "WQS")
     public void AONE_5663() throws Exception
-        {
+    {
         // ---- Step 1 ----
         // ---- Step action ---
         // Navigate to http://host:8080/wcmqs
@@ -192,51 +195,51 @@ public class PublicationActions extends AbstractWQS
 
         //open publications page using the publication title and check if you reached the correct page
         for (int i = 0; i < 7; i++)
-            {
+        {
             wcmqsAllPublicationsPage.getAllPublictionsTitles().get(i).openLink();
             WcmqsHomePage wcmqsHomePage1 = new WcmqsHomePage(drone);
             wcmqsHomePage1.render();
             Boolean check = false;
             for (String PageTitle : WcmqsPublicationPage.PUBLICATION_PAGES)
-                {
+            {
                 if (wcmqsHomePage1.getTitle().contains(PageTitle))
-                    {
+                {
                     check = true;
                     break;
-                    }
                 }
+            }
             Assert.assertTrue(check, "Publication page did not open correctly");
             wcmqsHomePage1.selectMenu("publications");
             wcmqsAllPublicationsPage = new WcmqsAllPublicationsPage(drone);
-            }
+        }
 
         //open publications page using the publication image and check if you reached the correct page
         for (int i = 0; i < 7; i++)
-            {
+        {
             wcmqsAllPublicationsPage.getAllPublictionsImages().get(i).openLink();
             WcmqsHomePage wcmqsHomePage1 = new WcmqsHomePage(drone);
             wcmqsHomePage1.render();
             Boolean check = false;
             for (String PageTitle : WcmqsPublicationPage.PUBLICATION_PAGES)
-                {
+            {
                 if (wcmqsHomePage1.getTitle().contains(PageTitle))
-                    {
+                {
                     check = true;
                     break;
-                    }
                 }
+            }
             Assert.assertTrue(check, "Publication page did not open correctly");
             wcmqsHomePage1.selectMenu("publications");
             wcmqsAllPublicationsPage = new WcmqsAllPublicationsPage(drone);
-            }
         }
+    }
 
     /**
      * AONE-5664:Verifying publications page
      */
     @Test(groups = "WQS")
     public void AONE_5664() throws Exception
-        {
+    {
         // ---- Step 1 ----
         // ---- Step action ---
         // Navigate to http://host:8080/wcmqs
@@ -263,14 +266,14 @@ public class PublicationActions extends AbstractWQS
         Assert.assertTrue(wcmqsPublicationPage.isPublicationTagsDisplay());
         Assert.assertTrue(wcmqsPublicationPage.isPublicationDetailsDisplay());
 
-        }
+    }
 
     /**
      * AONE-5665:Verifying publications details
      */
     @Test(groups = "WQS")
     public void AONE_5665() throws Exception
-        {
+    {
         // ---- Step 1 ----
         // ---- Step action ---
         // Navigate to http://host:8080/wcmqs
@@ -302,14 +305,14 @@ public class PublicationActions extends AbstractWQS
         File testFile = wcmqsPublicationPage.downloadFiles();
         Assert.assertTrue(testFile.length() > 0);
 
-        }
+    }
 
     @Test(groups = "DataPrepWQS")
     public void dataPrep_AONE_5666() throws Exception
-        {
+    {
         // ---- Data prep ----
-        ShareUser.openSiteDashboard(drone, siteName);
-        DocumentLibraryPage documentLibPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        SiteUtil.openSiteDashboard(drone, siteName).render();
+        DocumentLibraryPage documentLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         documentLibPage.selectFolder("Alfresco Quick Start");
         documentLibPage.selectFolder("Quick Start Editorial");
         documentLibPage.selectFolder("root");
@@ -321,14 +324,14 @@ public class PublicationActions extends AbstractWQS
         documentLibPage = new DocumentLibraryPage(drone);
         documentLibPage.selectFolder("research-reports");
         documentLibPage.getFileDirectoryInfo("Enterprise_Network_0410.pdf").addTag("tag2");
-        }
+    }
 
     /**
      * AONE-5666:Tags
      */
     @Test(groups = "WQS")
     public void AONE_5666() throws Exception
-        {
+    {
 
         // ---- Step 1 ----
         // ---- Step action ----
@@ -447,14 +450,14 @@ public class PublicationActions extends AbstractWQS
                 "Tag search did not return Enterprise Network");
         Assert.assertTrue(wcmqsSearchPage.getTagSearchResults().toString().contains("Alfresco WCM"), "Tag search did not return Alfresco WCM");
 
-        }
+    }
 
     /**
      * AONE-5667:Publications page
      */
     @Test(groups = "WQS")
     public void AONE_5667() throws Exception
-        {
+    {
         // ---- Step 1 ----
         // ---- Step action ---
         // Navigate to http://host:8080/wcmqs
@@ -480,14 +483,14 @@ public class PublicationActions extends AbstractWQS
         Assert.assertTrue(wcmqsAllPublicationsPage.isPublicationDateAndAuthorDisplay());
         Assert.assertTrue(wcmqsAllPublicationsPage.isPublicationTagDisplay());
         Assert.assertTrue(wcmqsAllPublicationsPage.isPublicationTitleDisplay());
-        }
+    }
 
     /**
      * AONE-5668:Publications page
      */
     @Test(groups = "WQS")
     public void AONE_5668() throws Exception
-        {
+    {
         drone.navigateTo(wqsURL);
         // ---- Step 1 ----
         // ---- Step action ----
@@ -525,14 +528,14 @@ public class PublicationActions extends AbstractWQS
 
         Assert.assertTrue(wcmqsPublicationPage.isPublicationNameDisplay());
 
-        }
+    }
 
     /**
      * AONE-5669:Publications page
      */
     @Test(groups = "WQS")
     public void AONE_5669() throws Exception
-        {
+    {
         drone.navigateTo(wqsURL);
         // ---- Step 1 ----
         // ---- Step action ----
@@ -572,14 +575,14 @@ public class PublicationActions extends AbstractWQS
 
         File testFile = wcmqsPublicationPage.downloadFiles();
         Assert.assertTrue(testFile.length() > 0);
-        }
+    }
 
     /**
      * AONE-5670:Publications - white papers
      */
     @Test(groups = "WQS")
     public void AONE_5670() throws Exception
-        {
+    {
         // ---- Step 1 ----
         // ---- Step action ---
         // Navigate to http://host:8080/wcmqs
@@ -605,14 +608,14 @@ public class PublicationActions extends AbstractWQS
         Assert.assertTrue(wcmqsAllPublicationsPage.isPublicationDateAndAuthorDisplay());
         Assert.assertTrue(wcmqsAllPublicationsPage.isPublicationTagDisplay());
         Assert.assertTrue(wcmqsAllPublicationsPage.isPublicationTitleDisplay());
-        }
+    }
 
     /**
      * AONE-5671:Publications - white papers publications
      */
     @Test(groups = "WQS")
     public void AONE_5671() throws Exception
-        {
+    {
         drone.navigateTo(wqsURL);
         // ---- Step 1 ----
         // ---- Step action ----
@@ -650,14 +653,14 @@ public class PublicationActions extends AbstractWQS
 
         Assert.assertTrue(wcmqsPublicationPage.isPublicationNameDisplay());
 
-        }
+    }
 
     /**
      * AONE-5672:Publications - white papers publications details
      */
     @Test(groups = "WQS")
     public void AONE_5672() throws Exception
-        {
+    {
         drone.navigateTo(wqsURL);
         // ---- Step 1 ----
         // ---- Step action ----
@@ -697,5 +700,5 @@ public class PublicationActions extends AbstractWQS
 
         File testFile = wcmqsPublicationPage.downloadFiles();
         Assert.assertTrue(testFile.length() > 0);
-        }
     }
+}

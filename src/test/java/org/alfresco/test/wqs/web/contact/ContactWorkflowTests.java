@@ -1,21 +1,25 @@
 package org.alfresco.test.wqs.web.contact;
 
 import org.alfresco.po.share.MyTasksPage;
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
 import org.alfresco.po.share.site.SiteDashboardPage;
 import org.alfresco.po.share.site.document.DocumentLibraryPage;
 import org.alfresco.po.share.site.document.EditDocumentPropertiesPage;
+import org.alfresco.po.share.util.SiteUtil;
 import org.alfresco.po.share.wqs.WcmqsContactPage;
 import org.alfresco.po.share.wqs.WcmqsHomePage;
 import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.share.util.ShareUserWorkFlow;
 import org.alfresco.test.FailedTestListener;
+import org.alfresco.test.util.SiteService;
 import org.alfresco.test.wqs.web.search.SearchTests;
 import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -79,12 +83,13 @@ public class ContactWorkflowTests extends AbstractWQS
         // ---- Step 1 ----
         // ---- Step Action -----
         // WCM Quick Start is installed; - is not required to be executed automatically
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+            ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 2 ----
         // ---- Step Action -----
         // Site "My Web Site" is created in Alfresco Share;
-        ShareUser.createSite(drone, siteName, SITE_VISIBILITY_PUBLIC);
+            SiteService siteService = (SiteService) ctx.getBean("siteService");
+            siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
 
         // ---- Step 3 ----
         // ---- Step Action -----
@@ -95,7 +100,7 @@ public class ContactWorkflowTests extends AbstractWQS
         wqsDashlet.clickImportButtton();
 
         // Change property for quick start to sitename
-        DocumentLibraryPage documentLibPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
+        DocumentLibraryPage documentLibPage = SiteUtil.openSiteFromSearch(drone, siteName).getSiteNav().selectSiteDocumentLibrary().render();
         documentLibPage.selectFolder(ALFRESCO_QUICK_START);
         EditDocumentPropertiesPage documentPropertiesPage = documentLibPage.getFileDirectoryInfo(QUICK_START_EDITORIAL).selectEditProperties().render();
         documentPropertiesPage.setSiteHostname(siteName);
@@ -158,7 +163,7 @@ public class ContactWorkflowTests extends AbstractWQS
         // ---- Expected results ----
         // Admin is logged in Alfresco Share;
 
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 4 ----
         // ---- Step action ----
@@ -204,7 +209,7 @@ public class ContactWorkflowTests extends AbstractWQS
         // ---- Expected results ----
         // Admin is logged in Alfresco Share;
 
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 2 ----
         // ---- Step action ----

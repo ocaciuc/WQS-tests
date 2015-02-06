@@ -1,6 +1,7 @@
 package org.alfresco.test.wqs.web.awe;
 
 import org.alfresco.po.share.ShareLink;
+import org.alfresco.po.share.ShareUtil;
 import org.alfresco.po.share.dashlet.SiteWebQuickStartDashlet;
 import org.alfresco.po.share.dashlet.WebQuickStartOptions;
 import org.alfresco.po.share.enums.Dashlets;
@@ -13,8 +14,10 @@ import org.alfresco.po.share.wqs.*;
 import org.alfresco.share.util.ShareUser;
 import org.alfresco.share.util.ShareUserDashboard;
 import org.alfresco.test.FailedTestListener;
+import org.alfresco.test.util.SiteService;
 import org.alfresco.test.wqs.uitl.AbstractWQS;
 import org.apache.log4j.Logger;
+import org.springframework.social.alfresco.api.entities.Site;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
@@ -85,12 +88,13 @@ public class EditingItemsTests extends AbstractWQS {
         // ---- Step 1 ----
         // ---- Step Action -----
         // WCM Quick Start is installed; - is not required to be executed automatically
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
 
         // ---- Step 2 ----
         // ---- Step Action -----
         // Site "My Web Site" is created in Alfresco Share;
-        ShareUser.createSite(drone, siteName, SITE_VISIBILITY_PUBLIC);
+        SiteService siteService = (SiteService) ctx.getBean("siteService");
+        siteService.create(ADMIN_USERNAME, ADMIN_PASSWORD, DOMAIN_FREE, siteName, "", Site.Visibility.PUBLIC);
 
         // ---- Step 3 ----
         // ---- Step Action -----
@@ -196,7 +200,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/blog) and verify blog1.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSitesDocumentLibrary(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "blog");
 
@@ -294,7 +298,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/blog) and verify blog2.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "blog");
 
@@ -390,7 +394,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/blog) and verify blog3.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "blog");
 
@@ -484,7 +488,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/news/global) and verify article4.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "news");
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder("global").render();
@@ -587,7 +591,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/news/global) and verify article3.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "news");
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder("global").render();
@@ -682,7 +686,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/news/companies) and verify article2.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "news");
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder("companies").render();
@@ -777,7 +781,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/news/companies) and verify article1.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "news");
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder("companies").render();
@@ -872,7 +876,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/news/markets) and verify article6.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "news");
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder("markets").render();
@@ -967,7 +971,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/news/markets) and verify article5.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "news");
         documentLibraryPage = (DocumentLibraryPage) documentLibraryPage.selectFolder("markets").render();
@@ -1062,7 +1066,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/news) and verify slide1.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "news");
 
@@ -1157,7 +1161,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/news) and verify slide2.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "news");
 
@@ -1253,7 +1257,7 @@ public class EditingItemsTests extends AbstractWQS {
         // Go to Share "My Web Site" document library (Alfresco Quick Start/Quick Start Editorial/root/news) and verify slide3.html file;
         // ---- Expected results ----
         // Changes made via AWE are dislpayed correctly
-        ShareUser.login(drone, ADMIN_USERNAME, ADMIN_PASSWORD);
+        ShareUtil.loginAs(drone, shareUrl, ADMIN_USERNAME, ADMIN_PASSWORD);
         DocumentLibraryPage documentLibraryPage = ShareUser.openSiteDocumentLibraryFromSearch(drone, siteName);
         documentLibraryPage = navigateToWqsFolderFromRoot(documentLibraryPage, "news");
 
